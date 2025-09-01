@@ -1,55 +1,67 @@
 package api
 
 import (
-	"net/http"
+	"pagemail/internal/auth"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
 	
+	// CORS middleware
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "http://127.0.0.1:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
+	
 	// Health check endpoint
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status": "ok",
-			"service": "pagemail",
-		})
-	})
+	router.GET("/health", handleHealthCheck)
 	
 	// API v1 routes
 	v1 := router.Group("/api/v1")
 	{
-		// Auth routes
-		auth := v1.Group("/auth")
+		// Public auth routes
+		authRoutes := v1.Group("/auth")
 		{
-			auth.POST("/register", handleRegister)
-			auth.POST("/login", handleLogin)
+			authRoutes.POST("/register", handleRegister)
+			authRoutes.POST("/login", handleLogin)
 		}
 		
-		// Page scraping routes
-		pages := v1.Group("/pages")
+		// Protected user routes
+		userRoutes := v1.Group("/user")
+		userRoutes.Use(auth.AuthMiddleware())
 		{
-			pages.POST("/scrape", handleScrape)
-			pages.GET("/history", handleHistory)
+			userRoutes.GET("/profile", handleProfile)
+		}
+		
+		// Page scraping routes (with optional auth + rate limiting)
+		pages := v1.Group("/pages")
+		pages.Use(auth.OptionalAuthMiddleware())
+		pages.Use(auth.RateLimitMiddleware())
+		{
+			pages.POST("/scrape", handleScrapeRequest)
+		}
+		
+		// Usage info routes (with optional auth)
+		usage := v1.Group("/usage")
+		usage.Use(auth.OptionalAuthMiddleware())
+		{
+			usage.GET("/", handleUsageInfo)
+		}
+		
+		// Protected page history routes
+		protectedPages := v1.Group("/pages")
+		protectedPages.Use(auth.AuthMiddleware())
+		{
+			protectedPages.GET("/history", handleRequestHistory)
 		}
 	}
 	
 	return router
 }
 
-func handleRegister(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "Register endpoint - to be implemented"})
-}
-
-func handleLogin(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "Login endpoint - to be implemented"})
-}
-
-func handleScrape(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "Scrape endpoint - to be implemented"})
-}
-
-func handleHistory(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "History endpoint - to be implemented"})
-}

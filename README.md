@@ -115,6 +115,103 @@ pagemail/
 | `SMTP_PASSWORD` | 邮箱密码 | - |
 | `JWT_SECRET` | JWT密钥 | - |
 
+## 📚 文档
+
+- [API 接口文档](API.md) - 详细的API使用说明
+- [部署指南](DEPLOYMENT.md) - 生产环境部署配置
+
+## 🚀 快速体验
+
+### 1. 启动开发环境
+```bash
+# 启动数据库
+docker-compose up -d db
+
+# 配置环境变量
+cp .env.example .env
+# 编辑 .env 设置 SMTP 配置
+
+# 启动后端
+go run main.go
+
+# 启动前端（新终端）
+cd web && npm install && npm run dev
+```
+
+### 2. 测试 API
+```bash
+# 健康检查
+curl http://localhost:8080/health
+
+# 游客抓取请求
+curl -X POST http://localhost:8080/api/v1/pages/scrape \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "email": "your@email.com",
+    "format": "html"
+  }'
+```
+
+### 3. 访问前端
+打开浏览器访问 http://localhost:3000 使用 Web 界面
+
+## 🎯 核心特性
+
+### ✨ 智能抓取策略
+- **HTTP优先**: 快速抓取静态内容
+- **Chrome后备**: 自动处理JavaScript渲染页面
+- **域名识别**: 自动选择最佳抓取方式
+
+### 📄 多格式支持
+- **HTML**: 完整页面归档，相对链接转换
+- **PDF**: 高质量文档生成，支持分页和页脚
+- **Screenshot**: 全页面高清截图
+
+### 👥 用户管理
+- **游客模式**: 无需注册，每日1次限制
+- **注册用户**: 更高配额，历史记录管理
+- **JWT认证**: 安全的无状态认证
+
+### 📧 邮件投递
+- **HTML模板**: 精美的邮件设计
+- **自动附件**: 处理结果自动发送
+- **SMTP支持**: 兼容各种邮件服务商
+
+## 🛠️ 技术亮点
+
+- **异步处理**: 非阻塞请求处理，支持高并发
+- **智能重试**: HTTP失败自动降级到Chrome抓取
+- **资源优化**: 相对URL转绝对URL，离线可访问
+- **安全防护**: bcrypt密码、JWT认证、CORS保护
+- **监控友好**: 结构化日志、健康检查接口
+
+## 🔄 更新日志
+
+### v1.0.0 (2025-09-01)
+- ✅ 完整的用户认证系统
+- ✅ 智能网页抓取引擎
+- ✅ 多格式文件转换
+- ✅ 自动邮件发送
+- ✅ 速率限制和配额管理
+- ✅ 响应式Web界面
+- ✅ Docker容器化部署
+- ✅ CI/CD自动构建
+
+## 🤝 贡献指南
+
+1. Fork 项目
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
+
+## 📞 支持
+
+- 🐛 [报告 Bug](https://github.com/best/pagemail/issues)
+- 💡 [功能建议](https://github.com/best/pagemail/discussions)
+- 📖 [查看文档](https://github.com/best/pagemail/wiki)
+
 ## 许可证
 
 MIT License - 详见 [LICENSE](LICENSE) 文件

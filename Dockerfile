@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile for PageMail
 # Stage 1: Build the Go backend
-FROM golang:1.21-alpine AS backend-builder
+FROM golang:1.25-alpine AS backend-builder
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ WORKDIR /app
 
 # Copy package files
 COPY web/package*.json ./
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy source code and build
 COPY web/ .
@@ -34,7 +34,7 @@ RUN npm run build
 FROM alpine:latest
 
 # Install runtime dependencies
-RUN apk --no-cache add ca-certificates chromium
+RUN apk --no-cache add ca-certificates chromium wget
 
 # Create app user
 RUN addgroup -g 1001 -S pagemail && \

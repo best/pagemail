@@ -27,6 +27,21 @@ go.work.sum
 # env file
 .env
 
+# Built binaries
+pagemail
+pagemail.exe
+
+# Frontend build outputs in backend directory
+web/dist/
+web/_next/
+web/*.html
+web/*.txt
+web/*.svg
+web/*.ico
+web/*build*.json
+web/cache/
+web/404/
+
 # Editor/IDE
 # .idea/
 # .vscode/

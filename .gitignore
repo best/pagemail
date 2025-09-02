@@ -30,6 +30,7 @@ go.work.sum
 # Built binaries
 pagemail
 pagemail.exe
+migrate-tool
 
 # Frontend build outputs in backend directory
 web/dist/

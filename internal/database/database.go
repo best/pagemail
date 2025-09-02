@@ -34,10 +34,13 @@ func Connect() error {
 	DB = db
 	log.Println("Connected to PostgreSQL database")
 
-	return AutoMigrate()
+	// Run database migrations instead of AutoMigrate
+	return MigrateDatabase()
 }
 
+// AutoMigrate performs GORM-based migrations (kept for development/compatibility)
 func AutoMigrate() error {
+	log.Println("Running GORM AutoMigrate (development mode)")
 	err := DB.AutoMigrate(
 		&models.User{},
 		&models.Request{},
@@ -48,7 +51,7 @@ func AutoMigrate() error {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
 
-	log.Println("Database migration completed")
+	log.Println("GORM AutoMigrate completed")
 	return nil
 }
 

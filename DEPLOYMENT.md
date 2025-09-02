@@ -88,16 +88,33 @@ DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=your_db_password
 DB_NAME=pagemail
+DB_SSLMODE=disable  # 生产环境建议使用 'require'
 
 # SMTP 邮件配置
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USERNAME=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
+SMTP_PASSWORD=your-app-password  # Gmail需要应用专用密码
 SMTP_FROM_NAME=PageMail
 
-# JWT 密钥
+# JWT 密钥（必须设置强密钥）
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
+```
+
+### 生产环境配置
+```bash
+# 运行模式
+GIN_MODE=release
+NODE_ENV=production
+
+# 安全配置
+CORS_ORIGINS=https://your-domain.com
+TRUSTED_PROXIES=127.0.0.1
+
+# 性能配置
+DB_MAX_OPEN_CONNS=25
+DB_MAX_IDLE_CONNS=5
+DB_CONN_MAX_LIFETIME=1h
 ```
 
 ### 可选配置
@@ -111,6 +128,44 @@ CHROME_PATH=/usr/bin/chromium-browser
 
 # 前端配置
 NEXT_PUBLIC_API_URL=http://localhost:8080
+
+# 文件存储
+FILES_DIR=files
+
+# 日志配置
+LOG_LEVEL=info
+LOG_FORMAT=json
+
+# 速率限制（可自定义）
+GUEST_DAILY_LIMIT=1
+GUEST_MONTHLY_LIMIT=5
+DEFAULT_DAILY_LIMIT=10
+DEFAULT_MONTHLY_LIMIT=300
+```
+
+### SMTP 配置说明
+
+#### Gmail 配置示例
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your@gmail.com
+SMTP_PASSWORD=app_specific_password  # 不是Gmail登录密码！
+```
+
+#### 其他邮件服务商
+```bash
+# Outlook/Hotmail
+SMTP_HOST=smtp.live.com
+SMTP_PORT=587
+
+# Yahoo
+SMTP_HOST=smtp.mail.yahoo.com
+SMTP_PORT=587
+
+# 自定义SMTP
+SMTP_HOST=mail.your-domain.com
+SMTP_PORT=587  # 或 465 for SSL
 ```
 
 ## 🔧 性能优化

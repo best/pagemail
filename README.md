@@ -102,18 +102,34 @@ pagemail/
 
 ## 环境变量配置
 
-| 变量名 | 说明 | 默认值 |
-|--------|------|--------|
-| `DB_HOST` | 数据库主机 | localhost |
-| `DB_PORT` | 数据库端口 | 5432 |
-| `DB_USER` | 数据库用户 | postgres |
-| `DB_PASSWORD` | 数据库密码 | postgres |
-| `DB_NAME` | 数据库名称 | pagemail |
-| `SMTP_HOST` | SMTP服务器 | smtp.gmail.com |
-| `SMTP_PORT` | SMTP端口 | 587 |
-| `SMTP_USERNAME` | 邮箱账号 | - |
-| `SMTP_PASSWORD` | 邮箱密码 | - |
-| `JWT_SECRET` | JWT密钥 | - |
+### 必需配置
+| 变量名 | 说明 | 默认值 | 备注 |
+|--------|------|--------|------|
+| `DB_HOST` | 数据库主机 | localhost | - |
+| `DB_PORT` | 数据库端口 | 5432 | - |
+| `DB_USER` | 数据库用户 | postgres | - |
+| `DB_PASSWORD` | 数据库密码 | postgres | 生产环境必须修改 |
+| `DB_NAME` | 数据库名称 | pagemail | - |
+| `DB_SSLMODE` | SSL模式 | disable | 生产环境建议enable |
+| `SMTP_HOST` | SMTP服务器 | smtp.gmail.com | 支持各邮件服务商 |
+| `SMTP_PORT` | SMTP端口 | 587 | 或465(SSL) |
+| `SMTP_USERNAME` | 邮箱账号 | - | **必填** |
+| `SMTP_PASSWORD` | 邮箱密码 | - | **必填**，建议用应用密码 |
+| `SMTP_FROM_NAME` | 发件人名称 | PageMail | - |
+| `JWT_SECRET` | JWT密钥 | - | **必填**，生产环境用强密钥 |
+
+### 可选配置
+| 变量名 | 说明 | 默认值 | 备注 |
+|--------|------|--------|------|
+| `PORT` | 服务端口 | 8080 | - |
+| `GIN_MODE` | 运行模式 | debug | 生产环境用release |
+| `CHROME_BIN` | Chrome路径 | - | Docker自动配置 |
+| `CHROME_PATH` | Chrome路径 | - | Docker自动配置 |
+| `NEXT_PUBLIC_API_URL` | 前端API地址 | http://localhost:8080 | - |
+| `NODE_ENV` | Node环境 | development | 生产用production |
+| `FILES_DIR` | 文件存储目录 | files | - |
+| `LOG_LEVEL` | 日志级别 | info | debug/info/warn/error |
+| `CORS_ORIGINS` | CORS允许源 | http://localhost:3000 | 多个用逗号分隔 |
 
 ## 📚 文档
 
@@ -127,9 +143,13 @@ pagemail/
 # 启动数据库
 docker-compose up -d db
 
-# 配置环境变量
+# 方式1: 自动生成环境配置（推荐）
+./scripts/generate-env.sh development
+# 然后编辑 .env 设置 SMTP 配置
+
+# 方式2: 手动配置环境变量
 cp .env.example .env
-# 编辑 .env 设置 SMTP 配置
+# 编辑 .env 设置所有必需配置
 
 # 启动后端
 go run main.go
@@ -153,7 +173,13 @@ curl -X POST http://localhost:8080/api/v1/pages/scrape \
   }'
 ```
 
-### 3. 访问前端
+### 3. 检查环境配置（推荐）
+```bash
+# 运行环境检查脚本
+./scripts/check-env.sh
+```
+
+### 4. 访问前端
 打开浏览器访问 http://localhost:3000 使用 Web 界面
 
 ## 🎯 核心特性

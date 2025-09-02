@@ -31,6 +31,7 @@ go.work.sum
 pagemail
 pagemail.exe
 migrate-tool
+main
 
 # Frontend build outputs in backend directory
 web/dist/

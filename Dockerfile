@@ -47,10 +47,8 @@ RUN mkdir -p /app/files /app/web
 COPY --from=backend-builder /app/pagemail /app/pagemail
 RUN chmod +x /app/pagemail
 
-# Copy frontend build
-COPY --from=frontend-builder /app/.next /app/web/.next
-COPY --from=frontend-builder /app/public /app/web/public
-COPY --from=frontend-builder /app/package.json /app/web/package.json
+# Copy frontend static export
+COPY --from=frontend-builder /app/dist /app/web
 
 # Set ownership
 RUN chown -R pagemail:pagemail /app

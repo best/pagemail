@@ -25,8 +25,10 @@ func MigrateDatabase() error {
 		return fmt.Errorf("failed to get underlying sql.DB: %w", err)
 	}
 
-	// Create postgres driver instance
-	driver, err := postgres.WithInstance(sqlDB, &postgres.Config{})
+	// Create postgres driver instance with NoLock config to avoid closing connection
+	driver, err := postgres.WithInstance(sqlDB, &postgres.Config{
+		MigrationsTable: "schema_migrations",
+	})
 	if err != nil {
 		return fmt.Errorf("failed to create postgres driver: %w", err)
 	}
@@ -42,7 +44,7 @@ func MigrateDatabase() error {
 	if err != nil {
 		return fmt.Errorf("failed to create migrate instance: %w", err)
 	}
-	defer m.Close()
+	// Note: Don't call m.Close() to avoid closing the shared database connection
 
 	// Run migrations
 	if err := m.Up(); err != nil {
@@ -82,7 +84,7 @@ func RollbackMigrations(steps int) error {
 	if err != nil {
 		return fmt.Errorf("failed to create migrate instance: %w", err)
 	}
-	defer m.Close()
+	// Note: Don't call m.Close() to avoid closing the shared database connection
 
 	// Get current version
 	version, dirty, err := m.Version()
@@ -138,7 +140,7 @@ func GetMigrationStatus() (version uint, dirty bool, err error) {
 	if err != nil {
 		return 0, false, fmt.Errorf("failed to create migrate instance: %w", err)
 	}
-	defer m.Close()
+	// Note: Don't call m.Close() to avoid closing the shared database connection
 
 	return m.Version()
 }

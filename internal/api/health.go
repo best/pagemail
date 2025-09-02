@@ -19,14 +19,12 @@ func handleHealthCheck(c *gin.Context) {
 	checks := make(map[string]string)
 	overallStatus := "healthy"
 
-	// Database check
+	// Database check - use a simple query instead of Ping
 	if database.DB != nil {
-		sqlDB, err := database.DB.DB()
+		var result int
+		err := database.DB.Raw("SELECT 1").Scan(&result).Error
 		if err != nil {
-			checks["database"] = "error: " + err.Error()
-			overallStatus = "unhealthy"
-		} else if err := sqlDB.Ping(); err != nil {
-			checks["database"] = "connection_failed: " + err.Error()
+			checks["database"] = "query_failed: " + err.Error()
 			overallStatus = "unhealthy"
 		} else {
 			checks["database"] = "connected"

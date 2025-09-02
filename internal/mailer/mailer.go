@@ -10,11 +10,13 @@ import (
 )
 
 type Config struct {
-	Host     string
-	Port     int
-	Username string
-	Password string
-	FromName string
+	Host      string
+	Port      int
+	Username  string
+	Password  string
+	FromName  string
+	FromEmail string
+	UseSSL    bool
 }
 
 type Mailer struct {
@@ -24,14 +26,21 @@ type Mailer struct {
 
 func NewMailer() *Mailer {
 	config := &Config{
-		Host:     getEnv("SMTP_HOST", "smtp.gmail.com"),
-		Port:     getEnvInt("SMTP_PORT", 587),
-		Username: getEnv("SMTP_USERNAME", ""),
-		Password: getEnv("SMTP_PASSWORD", ""),
-		FromName: getEnv("SMTP_FROM_NAME", "PageMail"),
+		Host:      getEnv("SMTP_HOST", "smtp.gmail.com"),
+		Port:      getEnvInt("SMTP_PORT", 587),
+		Username:  getEnv("SMTP_USERNAME", ""),
+		Password:  getEnv("SMTP_PASSWORD", ""),
+		FromName:  getEnv("SMTP_FROM_NAME", "PageMail"),
+		FromEmail: getEnv("SMTP_FROM_EMAIL", ""),
+		UseSSL:    getEnvBool("SMTP_USE_SSL", false),
 	}
 
 	dialer := gomail.NewDialer(config.Host, config.Port, config.Username, config.Password)
+	
+	// Configure SSL/TLS
+	if config.UseSSL {
+		dialer.SSL = true
+	}
 
 	return &Mailer{
 		config: config,
@@ -48,8 +57,12 @@ func (m *Mailer) SendPageMail(toEmail, originalURL, format, filePath string) err
 	// Create message
 	msg := gomail.NewMessage()
 
-	// Set headers
-	msg.SetHeader("From", fmt.Sprintf("%s <%s>", m.config.FromName, m.config.Username))
+	// Set headers - use FromEmail if configured, otherwise fall back to Username
+	fromEmail := m.config.FromEmail
+	if fromEmail == "" {
+		fromEmail = m.config.Username
+	}
+	msg.SetHeader("From", fmt.Sprintf("%s <%s>", m.config.FromName, fromEmail))
 	msg.SetHeader("To", toEmail)
 	msg.SetHeader("Subject", fmt.Sprintf("PageMail: %s", originalURL))
 
@@ -200,6 +213,18 @@ func getEnvInt(key string, defaultValue int) int {
 	return defaultValue
 }
 
+func getEnvBool(key string, defaultValue bool) bool {
+	if value := os.Getenv(key); value != "" {
+		if value == "true" || value == "1" {
+			return true
+		}
+		if value == "false" || value == "0" {
+			return false
+		}
+	}
+	return defaultValue
+}
+
 func fileExists(path string) bool {
 	if _, err := os.Stat(path); err == nil {
 		return true
@@ -220,8 +245,12 @@ func (m *Mailer) SendVerificationEmail(toEmail, verificationURL string) error {
 	// Create message
 	msg := gomail.NewMessage()
 
-	// Set headers
-	msg.SetHeader("From", fmt.Sprintf("%s <%s>", m.config.FromName, m.config.Username))
+	// Set headers - use FromEmail if configured, otherwise fall back to Username
+	fromEmail := m.config.FromEmail
+	if fromEmail == "" {
+		fromEmail = m.config.Username
+	}
+	msg.SetHeader("From", fmt.Sprintf("%s <%s>", m.config.FromName, fromEmail))
 	msg.SetHeader("To", toEmail)
 	msg.SetHeader("Subject", "PageMail - 邮箱验证")
 

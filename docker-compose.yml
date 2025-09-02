@@ -2,9 +2,9 @@ version: '3.8'
 
 services:
   # PostgreSQL Database
-  db:
+  pagemail-db:
     image: postgres:16-alpine
-    container_name: pagemail_db
+    container_name: pagemail-db
     environment:
       POSTGRES_DB: pagemail
       POSTGRES_USER: postgres
@@ -21,14 +21,14 @@ services:
       timeout: 10s
       retries: 3
 
-  # PageMail Backend Service
-  backend:
+  # PageMail Unified Application (Backend + Frontend)
+  pagemail:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: pagemail_backend
+    container_name: pagemail-app
     environment:
-      - DB_HOST=db
+      - DB_HOST=pagemail-db
       - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASSWORD=postgres
@@ -43,30 +43,12 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      db:
+      pagemail-db:
         condition: service_healthy
     networks:
       - pagemail_network
     volumes:
       - ./files:/app/files
-
-  # Frontend Development Server (Optional for development)
-  frontend:
-    build:
-      context: ./web
-      dockerfile: Dockerfile.dev
-    container_name: pagemail_frontend
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./web:/app
-      - /app/node_modules
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8080
-    networks:
-      - pagemail_network
-    profiles:
-      - dev
 
 volumes:
   postgres_data:

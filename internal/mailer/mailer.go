@@ -210,3 +210,143 @@ func fileExists(path string) bool {
 func getCurrentTime() string {
 	return "2025-09-01 16:54:21" // Placeholder - should use time.Now()
 }
+
+func (m *Mailer) SendVerificationEmail(toEmail, verificationURL string) error {
+	// Validate configuration
+	if m.config.Username == "" || m.config.Password == "" {
+		return fmt.Errorf("SMTP credentials not configured")
+	}
+
+	// Create message
+	msg := gomail.NewMessage()
+
+	// Set headers
+	msg.SetHeader("From", fmt.Sprintf("%s <%s>", m.config.FromName, m.config.Username))
+	msg.SetHeader("To", toEmail)
+	msg.SetHeader("Subject", "PageMail - 邮箱验证")
+
+	// Set body
+	bodyText := m.generateVerificationEmailBody(toEmail, verificationURL)
+	msg.SetBody("text/html", bodyText)
+
+	// Send email
+	if err := m.dialer.DialAndSend(msg); err != nil {
+		return fmt.Errorf("failed to send verification email: %w", err)
+	}
+
+	return nil
+}
+
+func (m *Mailer) generateVerificationEmailBody(email, verificationURL string) string {
+	return fmt.Sprintf(`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .header { 
+            background: linear-gradient(135deg, #4CAF50 0%%, #45a049 100%%); 
+            color: white; 
+            padding: 30px 20px; 
+            border-radius: 8px; 
+            text-align: center; 
+            margin-bottom: 30px; 
+        }
+        .content { 
+            background: #f8f9fa; 
+            padding: 30px; 
+            border-radius: 8px; 
+            border-left: 4px solid #4CAF50; 
+        }
+        .verify-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #4CAF50 0%%, #45a049 100%%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 20px 0;
+            border: none;
+            cursor: pointer;
+        }
+        .verify-button:hover {
+            background: linear-gradient(135deg, #45a049 0%%, #4CAF50 100%%);
+        }
+        .security-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 30px; 
+            padding-top: 20px; 
+            border-top: 1px solid #dee2e6; 
+            color: #6c757d; 
+            font-size: 0.9em; 
+        }
+        .url-fallback {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 邮箱验证</h1>
+        <p>欢迎注册 PageMail！</p>
+    </div>
+    
+    <div class="content">
+        <h2>验证您的邮箱地址</h2>
+        <p>您好！</p>
+        <p>感谢您注册 <strong>PageMail</strong> 服务。为了确保账户安全，请验证您的邮箱地址：</p>
+        <p><strong>邮箱：</strong>%s</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="%s" class="verify-button">立即验证邮箱</a>
+        </div>
+        
+        <p>如果按钮无法点击，请复制以下链接到浏览器中打开：</p>
+        <div class="url-fallback">%s</div>
+        
+        <div class="security-note">
+            <strong>🔒 安全提醒：</strong>
+            <ul>
+                <li>验证链接将在 <strong>24小时</strong> 后失效</li>
+                <li>请勿将此邮件转发给他人</li>
+                <li>如果这不是您本人操作，请忽略此邮件</li>
+            </ul>
+        </div>
+        
+        <h3>✨ 验证完成后您可以：</h3>
+        <ul>
+            <li>正常登录使用 PageMail 服务</li>
+            <li>享受完整的页面抓取功能</li>
+            <li>获得更高的使用配额</li>
+        </ul>
+    </div>
+    
+    <div class="footer">
+        <p>此邮件由 <strong>PageMail</strong> 系统自动发送</p>
+        <p><em>如有疑问，请勿回复此邮件</em></p>
+    </div>
+</body>
+</html>`, email, verificationURL, verificationURL)
+}

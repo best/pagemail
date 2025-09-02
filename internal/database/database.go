@@ -42,6 +42,7 @@ func AutoMigrate() error {
 		&models.User{},
 		&models.Request{},
 		&models.EmailConfig{},
+		&models.EmailVerification{},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)

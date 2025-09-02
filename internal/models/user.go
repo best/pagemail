@@ -5,14 +5,17 @@ import (
 )
 
 type User struct {
-	ID          uint      `json:"id" gorm:"primaryKey"`
-	Email       string    `json:"email" gorm:"uniqueIndex;not null"`
-	Password    string    `json:"-" gorm:"not null"`
-	IsActive    bool      `json:"is_active" gorm:"default:true"`
-	DailyLimit  int       `json:"daily_limit" gorm:"default:1"`
-	MonthlyLimit int      `json:"monthly_limit" gorm:"default:30"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID                  uint       `json:"id" gorm:"primaryKey"`
+	Email               string     `json:"email" gorm:"uniqueIndex;not null"`
+	Password            string     `json:"-" gorm:"not null"`
+	IsActive            bool       `json:"is_active" gorm:"default:false"`
+	EmailVerified       bool       `json:"email_verified" gorm:"default:false"`
+	EmailVerifyToken    string     `json:"-" gorm:"index"`
+	EmailVerifyExpires  *time.Time `json:"-"`
+	DailyLimit          int        `json:"daily_limit" gorm:"default:1"`
+	MonthlyLimit        int        `json:"monthly_limit" gorm:"default:30"`
+	CreatedAt           time.Time  `json:"created_at"`
+	UpdatedAt           time.Time  `json:"updated_at"`
 }
 
 type Request struct {
@@ -38,4 +41,12 @@ type EmailConfig struct {
 	Password string `json:"-" gorm:"not null"`
 	FromName string `json:"from_name"`
 	IsActive bool   `json:"is_active" gorm:"default:true"`
+}
+
+type EmailVerification struct {
+	ID         uint      `json:"id" gorm:"primaryKey"`
+	Email      string    `json:"email" gorm:"not null;index"`
+	IPAddress  string    `json:"ip_address" gorm:"not null"`
+	SentAt     time.Time `json:"sent_at"`
+	CreatedAt  time.Time `json:"created_at"`
 }

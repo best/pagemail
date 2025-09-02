@@ -30,6 +30,8 @@ func SetupRouter() *gin.Engine {
 		{
 			authRoutes.POST("/register", handleRegister)
 			authRoutes.POST("/login", handleLogin)
+			authRoutes.GET("/verify/:token", handleVerifyEmail)
+			authRoutes.POST("/resend-verification", handleResendVerification)
 		}
 		
 		// Protected user routes

@@ -34,13 +34,17 @@ func handleHealthCheck(c *gin.Context) {
 		overallStatus = "unhealthy"
 	}
 
-	// SMTP check (optional - only if credentials are configured)
+	// SMTP check - only test if credentials are configured
 	mailerService := mailer.NewMailer()
-	if err := mailerService.TestConnection(); err != nil {
-		checks["smtp"] = "unavailable: " + err.Error()
-		// Don't mark as unhealthy since SMTP might not be configured in dev
+	if mailerService.IsConfigured() {
+		if err := mailerService.TestConnection(); err != nil {
+			checks["smtp"] = "unavailable: " + err.Error()
+			overallStatus = "unhealthy"
+		} else {
+			checks["smtp"] = "connected"
+		}
 	} else {
-		checks["smtp"] = "configured"
+		checks["smtp"] = "not_configured"
 	}
 
 	response := HealthStatus{

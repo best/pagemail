@@ -175,6 +175,10 @@ func (m *Mailer) generateEmailBody(originalURL, format string) string {
 </html>`, originalURL, formatDesc, getCurrentTime(), formatDesc)
 }
 
+func (m *Mailer) IsConfigured() bool {
+	return m.config.Username != "" && m.config.Password != ""
+}
+
 func (m *Mailer) TestConnection() error {
 	// Create a test message
 	msg := gomail.NewMessage()

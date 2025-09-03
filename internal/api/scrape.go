@@ -30,7 +30,7 @@ type ScrapeResponse struct {
 func handleScrapeRequest(c *gin.Context) {
 	var req ScrapeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		RespondWithValidationError(c, err.Error())
 		return
 	}
 
@@ -51,16 +51,16 @@ func handleScrapeRequest(c *gin.Context) {
 	}
 
 	if err := database.DB.Create(&request).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeDatabaseError, "Failed to create scrape request")
 		return
 	}
 
 	// Process request asynchronously
 	go processRequest(&request)
 
-	c.JSON(http.StatusAccepted, ScrapeResponse{
+	RespondWithAccepted(c, ScrapeResponse{
 		RequestID: request.ID,
-		Message:   "Request accepted and is being processed",
+		Message:   "Scrape request accepted and is being processed",
 		Status:    "pending",
 	})
 }
@@ -138,9 +138,10 @@ func processRequest(request *models.Request) {
 }
 
 func handleRequestHistory(c *gin.Context) {
-	userID, exists := c.Get("user_id")
+	// Get validated user ID from middleware
+	userID, exists := c.Get("validated_user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		RespondWithError(c, http.StatusUnauthorized, ErrorCodeUnauthorized)
 		return
 	}
 
@@ -149,7 +150,7 @@ func handleRequestHistory(c *gin.Context) {
 		Order("created_at DESC").
 		Limit(50).
 		Find(&requests).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch requests"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeDatabaseError, "Failed to fetch scrape history")
 		return
 	}
 
@@ -161,8 +162,52 @@ func handleRequestHistory(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"requests": requests,
-		"total":    len(requests),
+	RespondWithSuccess(c, gin.H{
+		"scrapes": requests,
+		"total":   len(requests),
 	})
+}
+
+func handleScrapeDetail(c *gin.Context) {
+	scrapeID := c.Param("scrape_id")
+	if scrapeID == "" {
+		RespondWithError(c, http.StatusBadRequest, ErrorCodeMissingParameter, "scrape_id parameter is required")
+		return
+	}
+
+	var request models.Request
+	if err := database.DB.Where("id = ?", scrapeID).First(&request).Error; err != nil {
+		if err.Error() == "record not found" {
+			RespondWithError(c, http.StatusNotFound, ErrorCodeUserNotFound, "Scrape not found")
+		} else {
+			RespondWithError(c, http.StatusInternalServerError, ErrorCodeDatabaseError)
+		}
+		return
+	}
+
+	// Check if user has access to this scrape
+	userID, exists := c.Get("user_id")
+	if exists {
+		// Authenticated user - check if they own this scrape
+		if request.UserID != nil && *request.UserID == userID.(uint) {
+			// User owns this scrape, return full details
+		} else {
+			// User doesn't own this scrape, deny access
+			RespondWithError(c, http.StatusForbidden, ErrorCodeUnauthorized, "Access denied")
+			return
+		}
+	} else {
+		// Guest user - can only see their own scrapes, but we have no way to verify
+		// For security, don't allow guest access to specific scrape details
+		RespondWithError(c, http.StatusUnauthorized, ErrorCodeUnauthorized, "Authentication required")
+		return
+	}
+
+	// Remove sensitive information
+	request.FilePath = ""
+	if request.Status != "failed" {
+		request.ErrorMsg = ""
+	}
+
+	RespondWithSuccess(c, request)
 }

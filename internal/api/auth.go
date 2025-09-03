@@ -31,21 +31,21 @@ type AuthResponse struct {
 func handleRegister(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		RespondWithValidationError(c, err.Error())
 		return
 	}
 
 	// Check if user already exists
 	var existingUser models.User
 	if err := database.DB.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
+		RespondWithError(c, http.StatusConflict, ErrorCodeUserAlreadyExists)
 		return
 	}
 
 	// Hash password
 	hashedPassword, err := auth.HashPassword(req.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeInternalError, "Failed to hash password")
 		return
 	}
 
@@ -60,7 +60,7 @@ func handleRegister(c *gin.Context) {
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeUserCreationFailed)
 		return
 	}
 
@@ -68,13 +68,13 @@ func handleRegister(c *gin.Context) {
 	verificationService := auth.NewEmailVerificationService()
 	token, err := verificationService.GenerateVerificationToken()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate verification token"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeInternalError, "Failed to generate verification token")
 		return
 	}
 
 	// Set verification token
 	if err := verificationService.SetVerificationToken(user.ID, token); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to set verification token"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeInternalError, "Failed to set verification token")
 		return
 	}
 
@@ -82,12 +82,12 @@ func handleRegister(c *gin.Context) {
 	clientIP := c.ClientIP()
 	canSend, message, err := verificationService.CanSendVerificationEmail(req.Email, clientIP)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check send limits"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeInternalError, "Failed to check send limits")
 		return
 	}
 
 	if !canSend {
-		c.JSON(http.StatusTooManyRequests, gin.H{"error": message})
+		RespondWithError(c, http.StatusTooManyRequests, ErrorCodeTooManyRequests, message)
 		return
 	}
 
@@ -98,7 +98,7 @@ func handleRegister(c *gin.Context) {
 	// Send email
 	mailService := mailer.NewMailer()
 	if err := mailService.SendVerificationEmail(req.Email, verificationURL); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send verification email"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeEmailServiceError, "Failed to send verification email")
 		return
 	}
 
@@ -109,7 +109,7 @@ func handleRegister(c *gin.Context) {
 	}
 
 	user.Password = "" // Don't return password
-	c.JSON(http.StatusCreated, gin.H{
+	RespondWithCreated(c, gin.H{
 		"message": "Registration successful. Please check your email to verify your account.",
 		"user":    user,
 	})
@@ -118,7 +118,7 @@ func handleRegister(c *gin.Context) {
 func handleLogin(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		RespondWithValidationError(c, err.Error())
 		return
 	}
 
@@ -126,64 +126,61 @@ func handleLogin(c *gin.Context) {
 	var user models.User
 	if err := database.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+			RespondWithError(c, http.StatusUnauthorized, ErrorCodeInvalidCredentials)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeDatabaseError)
 		return
 	}
 
 	// Check if user is active
 	if !user.IsActive {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Account is deactivated"})
+		RespondWithError(c, http.StatusUnauthorized, ErrorCodeAccountDeactivated)
 		return
 	}
 
 	// Check if email is verified
 	if !user.EmailVerified {
-		c.JSON(http.StatusForbidden, gin.H{
-			"error": "Email not verified",
-			"code":  "EMAIL_NOT_VERIFIED",
-			"message": "Please verify your email address before logging in",
-		})
+		RespondWithError(c, http.StatusForbidden, ErrorCodeEmailNotVerified)
 		return
 	}
 
 	// Verify password
 	if !auth.CheckPasswordHash(req.Password, user.Password) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		RespondWithError(c, http.StatusUnauthorized, ErrorCodeInvalidCredentials)
 		return
 	}
 
 	// Generate JWT token
 	token, err := auth.GenerateToken(user.ID, user.Email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeInternalError, "Failed to generate token")
 		return
 	}
 
 	user.Password = "" // Don't return password
-	c.JSON(http.StatusOK, AuthResponse{
+	RespondWithSuccess(c, AuthResponse{
 		Token: token,
 		User:  user,
 	})
 }
 
 func handleProfile(c *gin.Context) {
-	userID, exists := c.Get("user_id")
+	// Get validated user ID from middleware
+	userID, exists := c.Get("validated_user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		RespondWithError(c, http.StatusUnauthorized, ErrorCodeUnauthorized)
 		return
 	}
 
 	var user models.User
 	if err := database.DB.First(&user, userID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		RespondWithError(c, http.StatusNotFound, ErrorCodeUserNotFound)
 		return
 	}
 
 	user.Password = "" // Don't return password
-	c.JSON(http.StatusOK, user)
+	RespondWithSuccess(c, user)
 }
 
 // Helper function to get base URL
@@ -195,30 +192,35 @@ func getBaseURL() string {
 	return baseURL
 }
 
+// Email verification request struct
+type VerifyEmailRequest struct {
+	Token string `json:"token" binding:"required"`
+}
+
 // Email verification handlers
 func handleVerifyEmail(c *gin.Context) {
-	token := c.Param("token")
-	if token == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Verification token is required"})
+	var req VerifyEmailRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		RespondWithValidationError(c, err.Error())
 		return
 	}
 
 	verificationService := auth.NewEmailVerificationService()
-	user, err := verificationService.VerifyEmail(token)
+	user, err := verificationService.VerifyEmail(req.Token)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		RespondWithError(c, http.StatusBadRequest, ErrorCodeInvalidVerificationToken, err.Error())
 		return
 	}
 
 	// Generate JWT token for immediate login
 	jwtToken, err := auth.GenerateToken(user.ID, user.Email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeInternalError, "Failed to generate token")
 		return
 	}
 
 	user.Password = "" // Don't return password
-	c.JSON(http.StatusOK, gin.H{
+	RespondWithSuccess(c, gin.H{
 		"message": "Email verified successfully. You can now login.",
 		"token":   jwtToken,
 		"user":    user,
@@ -232,7 +234,7 @@ type ResendVerificationRequest struct {
 func handleResendVerification(c *gin.Context) {
 	var req ResendVerificationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		RespondWithValidationError(c, err.Error())
 		return
 	}
 
@@ -241,10 +243,10 @@ func handleResendVerification(c *gin.Context) {
 	if err := database.DB.Where("email = ? AND email_verified = ?", req.Email, false).
 		First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "User not found or already verified"})
+			RespondWithError(c, http.StatusNotFound, ErrorCodeUserNotFound, "User not found or already verified")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeDatabaseError)
 		return
 	}
 
@@ -253,25 +255,25 @@ func handleResendVerification(c *gin.Context) {
 	clientIP := c.ClientIP()
 	canSend, message, err := verificationService.CanSendVerificationEmail(req.Email, clientIP)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check send limits"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeInternalError, "Failed to check send limits")
 		return
 	}
 
 	if !canSend {
-		c.JSON(http.StatusTooManyRequests, gin.H{"error": message})
+		RespondWithError(c, http.StatusTooManyRequests, ErrorCodeTooManyRequests, message)
 		return
 	}
 
 	// Generate new verification token
 	token, err := verificationService.GenerateVerificationToken()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate verification token"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeInternalError, "Failed to generate verification token")
 		return
 	}
 
 	// Set verification token
 	if err := verificationService.SetVerificationToken(user.ID, token); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to set verification token"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeInternalError, "Failed to set verification token")
 		return
 	}
 
@@ -282,7 +284,7 @@ func handleResendVerification(c *gin.Context) {
 	// Send email
 	mailService := mailer.NewMailer()
 	if err := mailService.SendVerificationEmail(req.Email, verificationURL); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send verification email"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeEmailServiceError, "Failed to send verification email")
 		return
 	}
 
@@ -292,7 +294,7 @@ func handleResendVerification(c *gin.Context) {
 		fmt.Printf("Failed to record verification email: %v\n", err)
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	RespondWithSuccess(c, gin.H{
 		"message": "Verification email sent. Please check your inbox.",
 	})
 }

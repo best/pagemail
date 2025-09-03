@@ -70,9 +70,11 @@ func checkUserRateLimit(c *gin.Context, userID uint) bool {
 	// Check limits
 	if dailyCount >= int64(user.DailyLimit) {
 		c.JSON(http.StatusTooManyRequests, gin.H{
-			"error":      "Daily limit exceeded",
-			"limit":      user.DailyLimit,
+			"error_code": 4001,
+			"error_type": "QUOTA_ERROR",
+			"message":    "Daily request limit exceeded",
 			"used":       dailyCount,
+			"limit":      user.DailyLimit,
 			"reset_time": startOfDay.Add(24 * time.Hour).Unix(),
 		})
 		c.Abort()
@@ -81,9 +83,11 @@ func checkUserRateLimit(c *gin.Context, userID uint) bool {
 
 	if monthlyCount >= int64(user.MonthlyLimit) {
 		c.JSON(http.StatusTooManyRequests, gin.H{
-			"error":      "Monthly limit exceeded",
-			"limit":      user.MonthlyLimit,
+			"error_code": 4002,
+			"error_type": "QUOTA_ERROR",
+			"message":    "Monthly request limit exceeded",
 			"used":       monthlyCount,
+			"limit":      user.MonthlyLimit,
 			"reset_time": startOfMonth.AddDate(0, 1, 0).Unix(),
 		})
 		c.Abort()
@@ -121,10 +125,11 @@ func checkGuestRateLimit(c *gin.Context) bool {
 	// Check daily limit for guests
 	if dailyCount >= int64(rateLimitConfig.GuestDailyLimit) {
 		c.JSON(http.StatusTooManyRequests, gin.H{
-			"error":   "Daily limit exceeded for guests",
-			"message": "Please register for higher limits",
-			"limit":   rateLimitConfig.GuestDailyLimit,
-			"used":    dailyCount,
+			"error_code": 4001,
+			"error_type": "QUOTA_ERROR",
+			"message":    "Daily request limit exceeded for guests - please register for higher limits",
+			"used":       dailyCount,
+			"limit":      rateLimitConfig.GuestDailyLimit,
 		})
 		c.Abort()
 		return false
@@ -133,10 +138,11 @@ func checkGuestRateLimit(c *gin.Context) bool {
 	// Check monthly limit for guests
 	if monthlyCount >= int64(rateLimitConfig.GuestMonthlyLimit) {
 		c.JSON(http.StatusTooManyRequests, gin.H{
-			"error":   "Monthly limit exceeded for guests",
-			"message": "Please register for higher limits",
-			"limit":   rateLimitConfig.GuestMonthlyLimit,
-			"used":    monthlyCount,
+			"error_code": 4002,
+			"error_type": "QUOTA_ERROR",
+			"message":    "Monthly request limit exceeded for guests - please register for higher limits",
+			"used":       monthlyCount,
+			"limit":      rateLimitConfig.GuestMonthlyLimit,
 		})
 		c.Abort()
 		return false

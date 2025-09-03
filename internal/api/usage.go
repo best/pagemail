@@ -8,21 +8,25 @@ import (
 )
 
 func handleUsageInfo(c *gin.Context) {
-	// Get user ID if authenticated
-	userID, _ := c.Get("user_id")
-	var userIDPtr *uint
-	if uid, ok := userID.(uint); ok {
-		userIDPtr = &uid
+	// Get validated user ID from middleware
+	userID, exists := c.Get("validated_user_id")
+	if !exists {
+		RespondWithError(c, http.StatusUnauthorized, ErrorCodeUnauthorized)
+		return
 	}
+
+	// Convert to proper type for usage function
+	uid := userID.(uint)
+	userIDPtr := &uid
 
 	// Get usage information
 	usageInfo := auth.GetUsageInfo(userIDPtr)
 	if usageInfo == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve usage information"})
+		RespondWithError(c, http.StatusInternalServerError, ErrorCodeInternalError, "Failed to retrieve usage information")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	RespondWithSuccess(c, gin.H{
 		"usage": usageInfo,
 	})
 }

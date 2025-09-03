@@ -47,37 +47,27 @@ func SetupRouter() *gin.Engine {
 		{
 			authRoutes.POST("/register", handleRegister)
 			authRoutes.POST("/login", handleLogin)
-			authRoutes.GET("/verify/:token", handleVerifyEmail)
-			authRoutes.POST("/resend-verification", handleResendVerification)
+			authRoutes.POST("/verification", handleVerifyEmail)
+			authRoutes.POST("/verification/resend", handleResendVerification)
 		}
 		
-		// Protected user routes
-		userRoutes := v1.Group("/user")
+		// Protected user routes (with user ID validation)
+		userRoutes := v1.Group("/users")
 		userRoutes.Use(auth.AuthMiddleware())
+		userRoutes.Use(ValidateUserIDMiddleware())
 		{
-			userRoutes.GET("/profile", handleProfile)
+			userRoutes.GET("/:user_id", handleProfile)
+			userRoutes.GET("/:user_id/scrapes", handleRequestHistory)
+			userRoutes.GET("/:user_id/usage", handleUsageInfo)
 		}
 		
-		// Page scraping routes (with optional auth + rate limiting)
-		pages := v1.Group("/pages")
-		pages.Use(auth.OptionalAuthMiddleware())
-		pages.Use(auth.RateLimitMiddleware())
+		// Public scrape routes (with optional auth + rate limiting)
+		scrapeRoutes := v1.Group("/scrapes")
+		scrapeRoutes.Use(auth.OptionalAuthMiddleware())
+		scrapeRoutes.Use(auth.RateLimitMiddleware())
 		{
-			pages.POST("/scrape", handleScrapeRequest)
-		}
-		
-		// Usage info routes (with optional auth)
-		usage := v1.Group("/usage")
-		usage.Use(auth.OptionalAuthMiddleware())
-		{
-			usage.GET("/", handleUsageInfo)
-		}
-		
-		// Protected page history routes
-		protectedPages := v1.Group("/pages")
-		protectedPages.Use(auth.AuthMiddleware())
-		{
-			protectedPages.GET("/history", handleRequestHistory)
+			scrapeRoutes.POST("", handleScrapeRequest)
+			scrapeRoutes.GET("/:scrape_id", handleScrapeDetail)
 		}
 	}
 	

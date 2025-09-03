@@ -54,10 +54,9 @@ func handleHealthCheck(c *gin.Context) {
 		Version: "1.0.0",
 	}
 
-	statusCode := http.StatusOK
 	if overallStatus == "unhealthy" {
-		statusCode = http.StatusServiceUnavailable
+		c.JSON(http.StatusServiceUnavailable, response)
+	} else {
+		RespondWithSuccess(c, response)
 	}
-
-	c.JSON(statusCode, response)
 }

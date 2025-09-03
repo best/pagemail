@@ -135,7 +135,7 @@ pagemail/
 
 - [API 接口文档](docs/API.md) - 详细的API使用说明
 - [数据库文档](docs/DATABASE.md) - 数据库架构和迁移管理
-- [部署指南](DEPLOYMENT.md) - 生产环境部署配置
+- [部署指南](docs/DEPLOYMENT.md) - Docker构建和生产环境部署
 
 ## 🚀 快速体验
 

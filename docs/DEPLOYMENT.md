@@ -176,6 +176,8 @@ SMTP_PORT=587
 SMTP_USERNAME=your@gmail.com
 SMTP_PASSWORD=your_app_password    # Gmail需要应用专用密码
 SMTP_FROM_NAME=PageMail
+SMTP_FROM_EMAIL=your@gmail.com     # 发件人邮箱地址（可选，默认使用SMTP_USERNAME）
+SMTP_USE_SSL=false                 # 是否使用SSL连接（可选，默认false）
 
 # JWT 密钥（必填，生产环境必须使用强密钥）
 JWT_SECRET=your-super-secret-jwt-key-change-in-production

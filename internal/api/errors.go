@@ -17,11 +17,11 @@ type ErrorResponse struct {
 // Error codes by category
 const (
 	// Authentication & Authorization Errors (1000-1999)
-	ErrorCodeUnauthorized           = 1001
-	ErrorCodeInvalidCredentials     = 1002
-	ErrorCodeTokenExpired           = 1003
-	ErrorCodeEmailNotVerified       = 1004
-	ErrorCodeAccountDeactivated     = 1005
+	ErrorCodeUnauthorized             = 1001
+	ErrorCodeInvalidCredentials       = 1002
+	ErrorCodeTokenExpired             = 1003
+	ErrorCodeEmailNotVerified         = 1004
+	ErrorCodeAccountDeactivated       = 1005
 	ErrorCodeInvalidVerificationToken = 1006
 
 	// User Related Errors (2000-2999)
@@ -30,12 +30,12 @@ const (
 	ErrorCodeUserCreationFailed = 2003
 
 	// Request & Validation Errors (3000-3999)
-	ErrorCodeInvalidRequest     = 3001
-	ErrorCodeValidationFailed   = 3002
-	ErrorCodeInvalidURL         = 3003
-	ErrorCodeInvalidEmail       = 3004
-	ErrorCodeInvalidFormat      = 3005
-	ErrorCodeMissingParameter   = 3006
+	ErrorCodeInvalidRequest   = 3001
+	ErrorCodeValidationFailed = 3002
+	ErrorCodeInvalidURL       = 3003
+	ErrorCodeInvalidEmail     = 3004
+	ErrorCodeInvalidFormat    = 3005
+	ErrorCodeMissingParameter = 3006
 
 	// Quota & Rate Limiting Errors (4000-4999)
 	ErrorCodeDailyLimitExceeded   = 4001

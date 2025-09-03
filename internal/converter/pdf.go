@@ -38,7 +38,7 @@ func (p *PDFConverter) ConvertHTMLToPDF(htmlContent []byte, outputPath string) e
 	// Create temp HTML file
 	tempDir := os.TempDir()
 	tempHTMLFile := filepath.Join(tempDir, fmt.Sprintf("pagemail_temp_%d.html", os.Getpid()))
-	
+
 	// Write HTML content to temp file
 	if err := os.WriteFile(tempHTMLFile, htmlContent, 0644); err != nil {
 		return fmt.Errorf("failed to write temp HTML file: %w", err)
@@ -47,12 +47,12 @@ func (p *PDFConverter) ConvertHTMLToPDF(htmlContent []byte, outputPath string) e
 
 	// Add page to PDF generator
 	page := wkhtmltopdf.NewPage(tempHTMLFile)
-	
+
 	// Set page options
 	page.FooterRight.Set("[page]")
 	page.FooterFontSize.Set(9)
 	page.Zoom.Set(0.95)
-	
+
 	p.options.AddPage(page)
 
 	// Generate PDF
@@ -92,7 +92,7 @@ func (p *PDFConverter) ConvertURLToPDF(url string, outputPath string) error {
 	page.Zoom.Set(0.95)
 	page.LoadErrorHandling.Set("ignore")
 	page.LoadMediaErrorHandling.Set("ignore")
-	
+
 	pdfg.AddPage(page)
 
 	// Generate PDF

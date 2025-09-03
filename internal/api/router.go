@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 	"os"
-	"path/filepath"
 	"pagemail/internal/auth"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-contrib/cors"
@@ -13,7 +13,7 @@ import (
 
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
-	
+
 	// CORS middleware - supports both development and production
 	corsConfig := cors.Config{
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -21,7 +21,7 @@ func SetupRouter() *gin.Engine {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}
-	
+
 	// Configure CORS origins based on environment
 	if gin.Mode() == gin.DebugMode {
 		// Development mode - allow frontend dev server
@@ -30,15 +30,15 @@ func SetupRouter() *gin.Engine {
 		// Production mode - allow same origin and common deployment URLs
 		corsConfig.AllowAllOrigins = true
 	}
-	
+
 	router.Use(cors.New(corsConfig))
-	
+
 	// Health check endpoint
 	router.GET("/health", handleHealthCheck)
-	
+
 	// Static file serving for production
 	setupStaticFileServing(router)
-	
+
 	// API v1 routes
 	v1 := router.Group("/api/v1")
 	{
@@ -50,7 +50,7 @@ func SetupRouter() *gin.Engine {
 			authRoutes.POST("/verification", handleVerifyEmail)
 			authRoutes.POST("/verification/resend", handleResendVerification)
 		}
-		
+
 		// Protected user routes (with user ID validation)
 		userRoutes := v1.Group("/users")
 		userRoutes.Use(auth.AuthMiddleware())
@@ -60,7 +60,7 @@ func SetupRouter() *gin.Engine {
 			userRoutes.GET("/:user_id/scrapes", handleRequestHistory)
 			userRoutes.GET("/:user_id/usage", handleUsageInfo)
 		}
-		
+
 		// Public scrape routes (with optional auth + rate limiting)
 		scrapeRoutes := v1.Group("/scrapes")
 		scrapeRoutes.Use(auth.OptionalAuthMiddleware())
@@ -70,7 +70,7 @@ func SetupRouter() *gin.Engine {
 			scrapeRoutes.GET("/:scrape_id", handleScrapeDetail)
 		}
 	}
-	
+
 	return router
 }
 
@@ -86,7 +86,7 @@ func setupStaticFileServing(router *gin.Engine) {
 	// Serve static assets (CSS, JS, images, etc.)
 	router.Static("/_next", filepath.Join(webDir, "_next"))
 	router.StaticFile("/favicon.ico", filepath.Join(webDir, "favicon.ico"))
-	
+
 	// Serve other static files from public directory
 	if publicDir := filepath.Join(webDir, "public"); dirExists(publicDir) {
 		router.Static("/public", publicDir)
@@ -95,13 +95,13 @@ func setupStaticFileServing(router *gin.Engine) {
 	// Handle SPA routing - serve index.html for all non-API routes
 	router.NoRoute(func(c *gin.Context) {
 		path := c.Request.URL.Path
-		
+
 		// Don't handle API routes
 		if strings.HasPrefix(path, "/api/") || strings.HasPrefix(path, "/health") {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 			return
 		}
-		
+
 		// Serve static files directly if they exist
 		if strings.Contains(path, ".") {
 			filePath := filepath.Join(webDir, path)
@@ -110,7 +110,7 @@ func setupStaticFileServing(router *gin.Engine) {
 				return
 			}
 		}
-		
+
 		// For all other routes, serve the SPA index.html
 		indexPath := filepath.Join(webDir, "index.html")
 		if fileExists(indexPath) {
@@ -131,4 +131,3 @@ func fileExists(path string) bool {
 	info, err := os.Stat(path)
 	return err == nil && !info.IsDir()
 }
-

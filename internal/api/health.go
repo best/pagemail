@@ -9,10 +9,10 @@ import (
 )
 
 type HealthStatus struct {
-	Status   string            `json:"status"`
-	Service  string            `json:"service"`
-	Checks   map[string]string `json:"checks"`
-	Version  string            `json:"version"`
+	Status  string            `json:"status"`
+	Service string            `json:"service"`
+	Checks  map[string]string `json:"checks"`
+	Version string            `json:"version"`
 }
 
 func handleHealthCheck(c *gin.Context) {

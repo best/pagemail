@@ -10,7 +10,7 @@ import (
 )
 
 type HTTPScraper struct {
-	client  *http.Client
+	client    *http.Client
 	userAgent string
 }
 

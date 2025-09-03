@@ -24,7 +24,7 @@ var rateLimitConfig = RateLimitConfig{
 func RateLimitMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, exists := c.Get("user_id")
-		
+
 		if exists && userID != nil {
 			// Authenticated user - check their specific limits
 			if !checkUserRateLimit(c, userID.(uint)) {
@@ -36,7 +36,7 @@ func RateLimitMiddleware() gin.HandlerFunc {
 				return
 			}
 		}
-		
+
 		c.Next()
 	}
 }
@@ -111,7 +111,7 @@ func checkGuestRateLimit(c *gin.Context) bool {
 
 	// For guest users, we'll check based on email + IP combination in recent requests
 	// This is a simple approach - in production you might want Redis or similar
-	
+
 	var dailyCount int64
 	database.DB.Model(&models.Request{}).
 		Where("user_id IS NULL AND created_at >= ?", startOfDay).
@@ -174,13 +174,13 @@ func GetUsageInfo(userID *uint) map[string]interface{} {
 		return map[string]interface{}{
 			"type": "authenticated",
 			"daily": map[string]interface{}{
-				"used":  dailyCount,
-				"limit": user.DailyLimit,
+				"used":      dailyCount,
+				"limit":     user.DailyLimit,
 				"remaining": user.DailyLimit - int(dailyCount),
 			},
 			"monthly": map[string]interface{}{
-				"used":  monthlyCount,
-				"limit": user.MonthlyLimit,
+				"used":      monthlyCount,
+				"limit":     user.MonthlyLimit,
 				"remaining": user.MonthlyLimit - int(monthlyCount),
 			},
 		}
@@ -197,13 +197,13 @@ func GetUsageInfo(userID *uint) map[string]interface{} {
 		return map[string]interface{}{
 			"type": "guest",
 			"daily": map[string]interface{}{
-				"used":  dailyCount,
-				"limit": rateLimitConfig.GuestDailyLimit,
+				"used":      dailyCount,
+				"limit":     rateLimitConfig.GuestDailyLimit,
 				"remaining": rateLimitConfig.GuestDailyLimit - int(dailyCount),
 			},
 			"monthly": map[string]interface{}{
-				"used":  monthlyCount,
-				"limit": rateLimitConfig.GuestMonthlyLimit,
+				"used":      monthlyCount,
+				"limit":     rateLimitConfig.GuestMonthlyLimit,
 				"remaining": rateLimitConfig.GuestMonthlyLimit - int(monthlyCount),
 			},
 		}

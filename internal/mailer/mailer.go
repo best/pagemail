@@ -36,7 +36,7 @@ func NewMailer() *Mailer {
 	}
 
 	dialer := gomail.NewDialer(config.Host, config.Port, config.Username, config.Password)
-	
+
 	// Configure SSL/TLS
 	if config.UseSSL {
 		dialer.SSL = true
@@ -189,7 +189,7 @@ func (m *Mailer) TestConnection() error {
 
 	// Try to send (we'll get an error but can check if connection works)
 	dialer := gomail.NewDialer(m.config.Host, m.config.Port, m.config.Username, m.config.Password)
-	
+
 	// Just test the connection without actually sending
 	sender, err := dialer.Dial()
 	if err != nil {

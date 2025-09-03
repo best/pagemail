@@ -27,7 +27,7 @@ func (s *EmailVerificationService) GenerateVerificationToken() (string, error) {
 // CanSendVerificationEmail checks if verification email can be sent based on rate limits
 func (s *EmailVerificationService) CanSendVerificationEmail(email, ipAddress string) (bool, string, error) {
 	now := time.Now()
-	
+
 	// Check email-based rate limit (5 minutes)
 	emailCooldown := now.Add(-5 * time.Minute)
 	var emailCount int64
@@ -92,9 +92,9 @@ func (s *EmailVerificationService) SetVerificationToken(userID uint, token strin
 // VerifyEmail verifies a user's email using the verification token
 func (s *EmailVerificationService) VerifyEmail(token string) (*models.User, error) {
 	var user models.User
-	
+
 	// Find user by token and check if token is not expired
-	if err := database.DB.Where("email_verify_token = ? AND email_verify_expires > ?", 
+	if err := database.DB.Where("email_verify_token = ? AND email_verify_expires > ?",
 		token, time.Now()).First(&user).Error; err != nil {
 		return nil, fmt.Errorf("invalid or expired verification token")
 	}
@@ -102,7 +102,7 @@ func (s *EmailVerificationService) VerifyEmail(token string) (*models.User, erro
 	// Update user as verified and active
 	updates := map[string]interface{}{
 		"email_verified":       true,
-		"is_active":           true,
+		"is_active":            true,
 		"email_verify_token":   nil,
 		"email_verify_expires": nil,
 	}
@@ -122,7 +122,7 @@ func (s *EmailVerificationService) VerifyEmail(token string) (*models.User, erro
 // CleanupExpiredTokens removes expired verification tokens (should be run periodically)
 func (s *EmailVerificationService) CleanupExpiredTokens() error {
 	now := time.Now()
-	
+
 	// Clear expired tokens
 	if err := database.DB.Model(&models.User{}).
 		Where("email_verify_expires IS NOT NULL AND email_verify_expires < ?", now).

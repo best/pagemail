@@ -94,7 +94,7 @@ func handleRegister(c *gin.Context) {
 	// Build verification URL
 	baseURL := getBaseURL()
 	verificationURL := fmt.Sprintf("%s/api/auth/verify/%s", baseURL, token)
-	
+
 	// Send email
 	mailService := mailer.NewMailer()
 	if err := mailService.SendVerificationEmail(req.Email, verificationURL); err != nil {
@@ -280,7 +280,7 @@ func handleResendVerification(c *gin.Context) {
 	// Build verification URL
 	baseURL := getBaseURL()
 	verificationURL := fmt.Sprintf("%s/api/auth/verify/%s", baseURL, token)
-	
+
 	// Send email
 	mailService := mailer.NewMailer()
 	if err := mailService.SendVerificationEmail(req.Email, verificationURL); err != nil {

@@ -81,7 +81,7 @@ func (c *ChromeScraper) Screenshot(targetURL string) ([]byte, error) {
 	err := chromedp.Run(chromeCtx,
 		chromedp.Navigate(targetURL),
 		chromedp.WaitReady("body", chromedp.ByQuery),
-		chromedp.Sleep(3*time.Second), // Wait for dynamic content and images
+		chromedp.Sleep(3*time.Second),                // Wait for dynamic content and images
 		chromedp.FullScreenshot(&screenshotData, 90), // Quality 90
 	)
 

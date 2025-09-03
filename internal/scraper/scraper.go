@@ -88,9 +88,9 @@ func (m *Manager) Close() error {
 func (m *Manager) GetRecommendedStrategy(url string) (bool, error) {
 	// Domain-specific rules for when to use Chrome
 	useChrome := false
-	
+
 	lowerURL := strings.ToLower(url)
-	
+
 	// Sites that definitely need Chrome
 	chromeRequired := []string{
 		"twitter.com", "x.com",
@@ -101,13 +101,13 @@ func (m *Manager) GetRecommendedStrategy(url string) (bool, error) {
 		"gmail.com",
 		"web.whatsapp.com",
 	}
-	
+
 	for _, site := range chromeRequired {
 		if strings.Contains(lowerURL, site) {
 			useChrome = true
 			break
 		}
 	}
-	
+
 	return useChrome, nil
 }

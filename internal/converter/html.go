@@ -21,7 +21,7 @@ func NewHTMLProcessor(baseURL string) *HTMLProcessor {
 func (h *HTMLProcessor) ProcessHTML(htmlContent []byte, outputPath string) error {
 	// Process the HTML content
 	processedHTML := h.makeHTMLSelfContained(string(htmlContent))
-	
+
 	// Write processed HTML to file
 	if err := os.WriteFile(outputPath, []byte(processedHTML), 0644); err != nil {
 		return fmt.Errorf("failed to write HTML file: %w", err)
@@ -33,10 +33,10 @@ func (h *HTMLProcessor) ProcessHTML(htmlContent []byte, outputPath string) error
 func (h *HTMLProcessor) makeHTMLSelfContained(html string) string {
 	// Convert relative URLs to absolute URLs
 	html = h.convertRelativeURLs(html)
-	
+
 	// Add metadata and styling
 	html = h.addMetadata(html)
-	
+
 	return html
 }
 
@@ -74,13 +74,13 @@ func (h *HTMLProcessor) convertRelativeURLs(html string) string {
 func (h *HTMLProcessor) convertURL(match string, baseURL *url.URL, pattern string) string {
 	regex := regexp.MustCompile(pattern)
 	matches := regex.FindStringSubmatch(match)
-	
+
 	if len(matches) < 2 {
 		return match
 	}
 
 	originalURL := matches[1]
-	
+
 	// Skip data URLs, absolute URLs, and fragments
 	if strings.HasPrefix(originalURL, "data:") ||
 		strings.HasPrefix(originalURL, "http://") ||
@@ -102,13 +102,13 @@ func (h *HTMLProcessor) convertURL(match string, baseURL *url.URL, pattern strin
 func (h *HTMLProcessor) convertCSSURL(match string, baseURL *url.URL) string {
 	regex := regexp.MustCompile(`url\(["']?([^"')]*)["']?\)`)
 	matches := regex.FindStringSubmatch(match)
-	
+
 	if len(matches) < 2 {
 		return match
 	}
 
 	originalURL := matches[1]
-	
+
 	// Skip data URLs, absolute URLs
 	if strings.HasPrefix(originalURL, "data:") ||
 		strings.HasPrefix(originalURL, "http://") ||
@@ -130,14 +130,14 @@ func (h *HTMLProcessor) addMetadata(html string) string {
 	// Add charset if missing
 	if !strings.Contains(strings.ToLower(html), `<meta charset=`) &&
 		!strings.Contains(strings.ToLower(html), `<meta http-equiv="content-type"`) {
-		html = strings.Replace(html, "<head>", 
+		html = strings.Replace(html, "<head>",
 			`<head>
     <meta charset="UTF-8">`, 1)
 	}
 
 	// Add viewport if missing
 	if !strings.Contains(strings.ToLower(html), `name="viewport"`) {
-		html = strings.Replace(html, "<head>", 
+		html = strings.Replace(html, "<head>",
 			`<head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">`, 1)
 	}
@@ -146,9 +146,9 @@ func (h *HTMLProcessor) addMetadata(html string) string {
 	metadata := fmt.Sprintf(`
     <meta name="generator" content="PageMail">
     <meta name="archived-date" content="%s">
-    <meta name="original-url" content="%s">`, 
+    <meta name="original-url" content="%s">`,
 		h.getCurrentTimestamp(), h.baseURL)
-	
+
 	html = strings.Replace(html, "<head>", "<head>"+metadata, 1)
 
 	return html

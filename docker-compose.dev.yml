@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database for Development
+  pagemail-dev-db:
+    image: postgres:16-alpine
+    container_name: pagemail-dev-db
+    environment:
+      POSTGRES_DB: pagemail
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - pagemail_dev_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PageMail Application for Development (uses local image)
+  pagemail-dev-app:
+    image: pagemail:latest
+    container_name: pagemail-dev-app
+    environment:
+      - DB_HOST=pagemail-dev-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=pagemail
+      - DB_SSLMODE=disable
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_FROM_NAME=PageMail-Dev
+      - JWT_SECRET=dev-secret-key-not-for-production
+      - GIN_MODE=debug
+    ports:
+      - "8080:8080"
+    depends_on:
+      pagemail-dev-db:
+        condition: service_healthy
+    networks:
+      - pagemail_dev_network
+    volumes:
+      - ./files:/app/files
+
+volumes:
+  postgres_dev_data:
+
+networks:
+  pagemail_dev_network:
+    driver: bridge

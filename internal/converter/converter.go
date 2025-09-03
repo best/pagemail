@@ -51,7 +51,7 @@ func (m *Manager) convertToPDF(content []byte, originalURL string, outputPath st
 	// For PDF conversion, we can either:
 	// 1. Convert HTML content to PDF
 	// 2. Convert URL directly to PDF (usually better results)
-	
+
 	// Try URL-based conversion first if we have a valid URL
 	if originalURL != "" && (strings.HasPrefix(originalURL, "http://") || strings.HasPrefix(originalURL, "https://")) {
 		err := m.pdfConverter.ConvertURLToPDF(originalURL, outputPath)

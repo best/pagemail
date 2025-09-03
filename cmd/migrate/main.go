@@ -45,12 +45,12 @@ func main() {
 		if err != nil {
 			log.Fatal("Failed to get migration status:", err)
 		}
-		
+
 		status := "clean"
 		if dirty {
 			status = "dirty"
 		}
-		
+
 		fmt.Printf("Current migration version: %d (%s)\n", version, status)
 
 	default:

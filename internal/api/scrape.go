@@ -73,7 +73,7 @@ func processRequest(request *models.Request) {
 	// Initialize scraper and converter
 	scraperManager := scraper.NewManager()
 	defer scraperManager.Close()
-	
+
 	converterManager := converter.NewManager()
 
 	var content []byte
@@ -102,7 +102,7 @@ func processRequest(request *models.Request) {
 	// Generate filename with proper extension
 	ext := converterManager.GetOutputExtension(request.Format)
 	filename := fmt.Sprintf("%s_%d_%d%s", request.Format, request.ID, time.Now().Unix(), ext)
-	
+
 	// Ensure files directory exists
 	filesDir := "files"
 	if _, err := os.Stat(filesDir); os.IsNotExist(err) {

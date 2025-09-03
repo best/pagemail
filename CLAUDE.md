@@ -34,16 +34,16 @@ docker-compose up -d       # Full stack
 ### Frontend Development
 ```bash
 # Install dependencies
-cd web && npm install
+cd frontend && npm install
 
 # Start development server with Turbopack
-cd web && npm run dev
+cd frontend && npm run dev
 
 # Build for production
-cd web && npm run build
+cd frontend && npm run build
 
 # Run linting
-cd web && npm run lint
+cd frontend && npm run lint
 ```
 
 ### Environment Setup
@@ -74,8 +74,8 @@ cp .env.example .env
 - **Framework**: Next.js 15 with App Router and Turbopack
 - **UI**: React 19, TypeScript, Tailwind CSS 4
 - **Structure**: 
-  - `web/src/app/` - App router pages and layouts
-  - `web/src/components/` - Reusable React components
+  - `frontend/src/app/` - App router pages and layouts
+  - `frontend/src/components/` - Reusable React components
 
 ### Database
 - **Primary**: PostgreSQL with GORM ORM
@@ -89,7 +89,7 @@ cp .env.example .env
 2. Start database: `docker-compose up -d db`  
 3. Run migrations: `go run cmd/migrate/main.go -action=up`
 4. Start backend: `go run main.go`
-5. Start frontend: `cd web && npm install && npm run dev`
+5. Start frontend: `cd frontend && npm install && npm run dev`
 
 ### Key Environment Variables
 - **Database**: DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_SSLMODE
@@ -116,7 +116,7 @@ The system uses intelligent scraping with HTTP-first approach:
 go test ./...
 
 # Frontend linting
-cd web && npm run lint
+cd frontend && npm run lint
 ```
 
 ### Health Checks

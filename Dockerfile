@@ -23,11 +23,11 @@ FROM node:20-alpine AS frontend-builder
 WORKDIR /app
 
 # Copy package files
-COPY web/package*.json ./
+COPY frontend/package*.json ./
 RUN npm ci
 
 # Copy source code and build
-COPY web/ .
+COPY frontend/ .
 RUN npm run build
 
 # Stage 3: Final runtime image
@@ -41,14 +41,14 @@ RUN addgroup -g 1001 -S pagemail && \
     adduser -S pagemail -u 1001
 
 # Create directories
-RUN mkdir -p /app/files /app/web
+RUN mkdir -p /app/files /app/frontend
 
 # Copy backend binary
 COPY --from=backend-builder /app/pagemail /app/pagemail
 RUN chmod +x /app/pagemail
 
 # Copy frontend static export
-COPY --from=frontend-builder /app/dist /app/web
+COPY --from=frontend-builder /app/dist /app/frontend
 
 # Set ownership
 RUN chown -R pagemail:pagemail /app

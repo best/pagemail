@@ -34,15 +34,15 @@ migrate-tool
 main
 
 # Frontend build outputs in backend directory
-web/dist/
-web/_next/
-web/*.html
-web/*.txt
-web/*.svg
-web/*.ico
-web/*build*.json
-web/cache/
-web/404/
+frontend/dist/
+frontend/_next/
+frontend/*.html
+frontend/*.txt
+frontend/*.svg
+frontend/*.ico
+frontend/*build*.json
+frontend/cache/
+frontend/404/
 
 # Editor/IDE
 # .idea/

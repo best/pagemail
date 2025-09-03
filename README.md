@@ -128,7 +128,7 @@ pagemail/
 │   ├── converter/         # 文件转换
 │   └── mailer/            # 邮件发送
 ├── migrations/            # 数据库迁移
-├── web/                   # Next.js前端
+├── frontend/              # Next.js前端
 │   ├── src/app/          # 页面路由
 │   ├── src/components/   # React组件
 │   └── src/lib/          # 工具函数

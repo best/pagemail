@@ -2,7 +2,6 @@
 
 ## 🔗 基础信息
 
-- **Base URL**: `http://localhost:8080` (开发环境)
 - **API Version**: v1
 - **Content-Type**: `application/json`
 - **认证方式**: JWT Bearer Token

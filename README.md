@@ -87,19 +87,6 @@ pagemail/
 └── .github/workflows/    # CI/CD配置
 ```
 
-## API 接口
-
-### 认证接口
-- `POST /api/v1/auth/register` - 用户注册
-- `POST /api/v1/auth/login` - 用户登录
-
-### 页面抓取接口  
-- `POST /api/v1/pages/scrape` - 提交抓取任务
-- `GET /api/v1/pages/history` - 查看历史记录
-
-### 系统接口
-- `GET /health` - 健康检查
-
 ## 环境变量配置
 
 ### 必需配置
@@ -161,7 +148,7 @@ cd web && npm install && npm run dev
 curl http://localhost:8080/health
 
 # 游客抓取请求
-curl -X POST http://localhost:8080/api/v1/pages/scrape \
+curl -X POST http://localhost:8080/api/v1/scrapes \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://example.com",

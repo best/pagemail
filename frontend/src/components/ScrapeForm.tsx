@@ -23,7 +23,7 @@ export function ScrapeForm() {
     setMessage('')
 
     try {
-      const response = await fetch('/api/v1/pages/scrape', {
+      const response = await fetch('/api/v1/scrapes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

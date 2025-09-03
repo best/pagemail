@@ -7,8 +7,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 1. **NO signatures in commits** - Never include "Signed-off-by", "Co-authored-by", or similar attribution
 2. **Commit format required** - All commits MUST use `<type>: <description>` format (feat:, fix:, docs:, etc.)
 3. **API docs mandatory** - Update `docs/API.md` immediately when changing any API endpoint
-4. **Lowercase commit messages** - Start description with lowercase letter, no period at end
-5. **Present tense commits** - Use "add feature" not "added feature"
+4. **Database docs mandatory** - Update `docs/DATABASE.md` immediately when making any database schema changes
+5. **Lowercase commit messages** - Start description with lowercase letter, no period at end
+6. **Present tense commits** - Use "add feature" not "added feature"
 
 ## Essential Commands
 
@@ -225,3 +226,43 @@ Before any API commit, verify:
 - [ ] Request/response examples are accurate
 - [ ] Error cases are documented
 - [ ] Authentication requirements are clear
+
+## Database Documentation (MANDATORY)
+
+**All database schema changes MUST be documented immediately:**
+
+### Documentation Location
+- **Database Documentation**: `docs/DATABASE.md` - Complete database schema and migration guide
+- **Keep Updated**: Database docs MUST be updated with every schema change
+
+### Database Documentation Rules (ENFORCED)
+1. **Immediate Updates**: Update `docs/DATABASE.md` whenever you:
+   - Create new migrations (up/down SQL files)
+   - Add new tables or modify existing tables
+   - Add/remove/modify columns, indexes, constraints
+   - Change data types or field properties
+   - Add foreign key relationships
+
+2. **Required Documentation Elements**:
+   - **Schema Changes**: Document all table structure changes
+   - **Migration History**: Update migration history table with new entries
+   - **Index Strategy**: Document new indexes and their purpose
+   - **Data Relationships**: Update table relationship descriptions
+   - **Performance Impact**: Note any performance considerations
+
+3. **Database Change Workflow**:
+   ```bash
+   # 1. Create migration files in internal/database/migrations/
+   # 2. Update docs/DATABASE.md immediately with schema changes
+   # 3. Test migration up/down commands
+   # 4. Commit both migration files and documentation together
+   git add internal/database/migrations/ docs/DATABASE.md
+   git commit -m "feat: add user preferences table"
+   ```
+
+### Database Documentation Standards
+- Document table structures with field types and constraints
+- Include realistic examples of complex queries
+- Update migration history table with every new migration
+- Explain the purpose and impact of schema changes
+- Include rollback considerations for production deployments

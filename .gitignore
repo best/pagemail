@@ -33,16 +33,7 @@ pagemail.exe
 migrate-tool
 main
 
-# Frontend build outputs in backend directory
-frontend/dist/
-frontend/_next/
-frontend/*.html
-frontend/*.txt
-frontend/*.svg
-frontend/*.ico
-frontend/*build*.json
-frontend/cache/
-frontend/404/
+# Note: Frontend has its own .gitignore file for frontend-specific ignores
 
 # Editor/IDE
 .idea/

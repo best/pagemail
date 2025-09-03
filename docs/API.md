@@ -16,14 +16,27 @@
 GET /health
 ```
 
-**响应示例**:
+**响应示例（成功，HTTP 200）**:
 ```json
 {
   "status": "healthy",
   "service": "pagemail", 
   "checks": {
     "database": "connected",
-    "smtp": "configured"
+    "smtp": "connected"
+  },
+  "version": "1.0.0"
+}
+```
+
+**响应示例（失败，HTTP 503）**:
+```json
+{
+  "status": "unhealthy",
+  "service": "pagemail", 
+  "checks": {
+    "database": "query_failed: connection refused",
+    "smtp": "not_configured"
   },
   "version": "1.0.0"
 }
@@ -46,14 +59,19 @@ POST /api/v1/auth/register
 }
 ```
 
-**响应示例**:
+**参数说明**:
+- `email`: 用户邮箱地址（必填，需要有效邮箱格式）
+- `password`: 用户密码（必填，最少6位字符）
+
+**响应示例（成功，HTTP 201）**:
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "message": "Registration successful. Please check your email to verify your account.",
   "user": {
     "id": 1,
     "email": "user@example.com",
-    "is_active": true,
+    "is_active": false,
+    "email_verified": false,
     "daily_limit": 10,
     "monthly_limit": 300,
     "created_at": "2025-09-01T16:00:00Z",
@@ -61,6 +79,25 @@ POST /api/v1/auth/register
   }
 }
 ```
+
+**错误响应（邮箱已存在，HTTP 409）**:
+```json
+{
+  "error": "User already exists"
+}
+```
+
+**错误响应（参数验证失败，HTTP 400）**:
+```json
+{
+  "error": "Key: 'RegisterRequest.Email' Error:Field validation for 'Email' failed on the 'required' tag"
+}
+```
+
+**注意事项**:
+- 新注册用户默认为未激活状态 (`is_active: false`)
+- 需要通过邮箱验证激活账户才能登录
+- 系统会自动发送验证邮件到注册邮箱
 
 #### 用户登录
 ```http
@@ -75,7 +112,11 @@ POST /api/v1/auth/login
 }
 ```
 
-**响应示例**:
+**参数说明**:
+- `email`: 用户邮箱地址（必填）
+- `password`: 用户密码（必填）
+
+**响应示例（成功，HTTP 200）**:
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -83,11 +124,104 @@ POST /api/v1/auth/login
     "id": 1,
     "email": "user@example.com",
     "is_active": true,
+    "email_verified": true,
     "daily_limit": 10,
     "monthly_limit": 300,
     "created_at": "2025-09-01T16:00:00Z",
     "updated_at": "2025-09-01T16:00:00Z"
   }
+}
+```
+
+**错误响应（邮箱未验证，HTTP 403）**:
+```json
+{
+  "error": "Email not verified",
+  "code": "EMAIL_NOT_VERIFIED",
+  "message": "Please verify your email address before logging in"
+}
+```
+
+**错误响应（账户被禁用，HTTP 401）**:
+```json
+{
+  "error": "Account is deactivated"
+}
+```
+
+**错误响应（凭证无效，HTTP 401）**:
+```json
+{
+  "error": "Invalid credentials"
+}
+```
+
+#### 邮箱验证
+```http
+GET /api/v1/auth/verify/:token
+```
+
+**URL参数**:
+- `token`: 邮箱验证令牌（必填，通过邮件发送）
+
+**响应示例（成功，HTTP 200）**:
+```json
+{
+  "message": "Email verified successfully. You can now login.",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "email": "user@example.com",
+    "is_active": true,
+    "email_verified": true,
+    "daily_limit": 10,
+    "monthly_limit": 300,
+    "created_at": "2025-09-01T16:00:00Z",
+    "updated_at": "2025-09-01T16:00:00Z"
+  }
+}
+```
+
+**错误响应（无效令牌，HTTP 400）**:
+```json
+{
+  "error": "Invalid or expired verification token"
+}
+```
+
+#### 重发验证邮件
+```http
+POST /api/v1/auth/resend-verification
+```
+
+**请求参数**:
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**参数说明**:
+- `email`: 用户邮箱地址（必填，需要有效邮箱格式）
+
+**响应示例（成功，HTTP 200）**:
+```json
+{
+  "message": "Verification email sent. Please check your inbox."
+}
+```
+
+**错误响应（用户不存在或已验证，HTTP 404）**:
+```json
+{
+  "error": "User not found or already verified"
+}
+```
+
+**错误响应（发送频率限制，HTTP 429）**:
+```json
+{
+  "error": "Too many verification emails sent. Please wait before requesting another."
 }
 ```
 
@@ -105,16 +239,31 @@ GET /api/v1/user/profile
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-**响应示例**:
+**响应示例（成功，HTTP 200）**:
 ```json
 {
   "id": 1,
   "email": "user@example.com",
   "is_active": true,
+  "email_verified": true,
   "daily_limit": 10,
   "monthly_limit": 300,
   "created_at": "2025-09-01T16:00:00Z",
   "updated_at": "2025-09-01T16:00:00Z"
+}
+```
+
+**错误响应（未认证，HTTP 401）**:
+```json
+{
+  "error": "User not authenticated"
+}
+```
+
+**错误响应（用户不存在，HTTP 404）**:
+```json
+{
+  "error": "User not found"
 }
 ```
 
@@ -137,11 +286,16 @@ POST /api/v1/pages/scrape
 ```
 
 **参数说明**:
-- `url`: 要抓取的网页URL（必填）
-- `email`: 接收邮件的地址（必填）
-- `format`: 输出格式，可选值：`html`、`pdf`、`screenshot`（必填）
+- `url`: 要抓取的网页URL（必填，需要有效的URL格式）
+- `email`: 接收邮件的地址（必填，需要有效邮箱格式）
+- `format`: 输出格式（必填，可选值：`html`、`pdf`、`screenshot`）
 
-**响应示例**:
+**请求头（可选）**:
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**响应示例（成功，HTTP 202）**:
 ```json
 {
   "request_id": 12,
@@ -150,9 +304,40 @@ POST /api/v1/pages/scrape
 }
 ```
 
+**错误响应（参数验证失败，HTTP 400）**:
+```json
+{
+  "error": "Key: 'ScrapeRequest.URL' Error:Field validation for 'URL' failed on the 'url' tag"
+}
+```
+
+**错误响应（游客配额超限，HTTP 429）**:
+```json
+{
+  "error": "Daily limit exceeded for guests",
+  "message": "Please register for higher limits",
+  "limit": 1,
+  "used": 1
+}
+```
+
+**错误响应（用户配额超限，HTTP 429）**:
+```json
+{
+  "error": "Daily limit exceeded",
+  "limit": 10,
+  "used": 10,
+  "reset_time": 1725148800
+}
+```
+
 **限制说明**:
 - 游客用户：每日1次，每月5次
-- 注册用户：每日10次，每月300次（可自定义）
+- 注册用户：每日10次，每月300次（默认值，可由管理员自定义）
+
+**认证要求**:
+- 游客用户可直接使用，无需认证
+- 已注册用户建议携带 JWT Token 以享受更高配额
 
 #### 查看请求历史
 ```http
@@ -164,7 +349,7 @@ GET /api/v1/pages/history
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-**响应示例**:
+**响应示例（成功，HTTP 200）**:
 ```json
 {
   "requests": [
@@ -191,6 +376,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
+**错误响应（未认证，HTTP 401）**:
+```json
+{
+  "error": "User not authenticated"
+}
+```
+
 ---
 
 ### 使用情况接口
@@ -205,7 +397,7 @@ GET /api/v1/usage/
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-**响应示例（认证用户）**:
+**响应示例（认证用户，HTTP 200）**:
 ```json
 {
   "usage": {
@@ -224,7 +416,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 }
 ```
 
-**响应示例（游客用户）**:
+**响应示例（游客用户，HTTP 200）**:
 ```json
 {
   "usage": {
@@ -240,6 +432,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       "remaining": 2
     }
   }
+}
+```
+
+**错误响应（内部错误，HTTP 500）**:
+```json
+{
+  "error": "Failed to retrieve usage information"
 }
 ```
 
@@ -271,12 +470,24 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | `503` | 服务不可用 | 依赖服务故障 |
 
 ### 频率限制错误示例
+
+**注册用户限制（HTTP 429）**:
 ```json
 {
   "error": "Daily limit exceeded",
   "limit": 10,
   "used": 10,
   "reset_time": 1725148800
+}
+```
+
+**游客用户限制（HTTP 429）**:
+```json
+{
+  "error": "Daily limit exceeded for guests",
+  "message": "Please register for higher limits", 
+  "limit": 1,
+  "used": 1
 }
 ```
 
@@ -289,6 +500,30 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 #### 用户注册
 ```bash
 curl -X POST http://localhost:8080/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "password123"
+  }'
+```
+
+#### 邮箱验证
+```bash
+curl -X GET http://localhost:8080/api/v1/auth/verify/TOKEN_FROM_EMAIL
+```
+
+#### 重发验证邮件
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/resend-verification \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com"
+  }'
+```
+
+#### 用户登录
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -360,14 +595,22 @@ console.log('Request ID:', result.request_id);
 
 ### 典型使用流程
 
-1. **用户注册/登录** → 获取访问令牌
-2. **提交抓取请求** → 获得请求ID和pending状态
-3. **系统异步处理**：
+**首次使用用户**:
+1. **用户注册** → 填写邮箱和密码
+2. **邮箱验证** → 点击验证邮件中的链接激活账户
+3. **用户登录** → 获取访问令牌（JWT Token）
+4. **提交抓取请求** → 获得请求ID和pending状态
+5. **系统异步处理**：
    - 抓取网页内容
    - 转换为指定格式
    - 发送邮件附件
-4. **查看请求历史** → 确认处理状态
-5. **检查邮箱** → 接收处理结果
+6. **查看请求历史** → 确认处理状态
+7. **检查邮箱** → 接收处理结果
+
+**游客用户**:
+1. **直接提交抓取请求** → 无需注册，受限配额（每日1次）
+2. **系统处理** → 同上
+3. **检查邮箱** → 接收处理结果
 
 ### 状态流转
 

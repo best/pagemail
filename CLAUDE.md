@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🚨 MANDATORY RESTRICTIONS
+
+1. **NO signatures in commits** - Never include "Signed-off-by", "Co-authored-by", or similar attribution
+2. **Commit format required** - All commits MUST use `<type>: <description>` format (feat:, fix:, docs:, etc.)
+3. **API docs mandatory** - Update `docs/API.md` immediately when changing any API endpoint
+4. **Lowercase commit messages** - Start description with lowercase letter, no period at end
+5. **Present tense commits** - Use "add feature" not "added feature"
+
 ## Essential Commands
 
 ### Backend Development

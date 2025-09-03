@@ -126,45 +126,15 @@ pagemail/
 
 ## 🚀 快速体验
 
-### 1. 启动开发环境
-```bash
-# 启动数据库
-docker-compose up -d db
+立即使用官方托管的 PageMail 服务：
 
-# 配置环境变量
-cp .env.example .env
-# 编辑 .env 设置所有必需配置
+**🌐 [https://pagemail.cn](https://pagemail.cn)**
 
-# 启动后端
-go run main.go
-
-# 启动前端（新终端）
-cd web && npm install && npm run dev
-```
-
-### 2. 测试 API
-```bash
-# 健康检查
-curl http://localhost:8080/health
-
-# 游客抓取请求
-curl -X POST http://localhost:8080/api/v1/scrapes \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://example.com",
-    "email": "your@email.com",
-    "format": "html"
-  }'
-```
-
-### 3. 验证配置
-```bash
-# 检查健康状态
-curl http://localhost:8080/health
-```
-
-### 4. 访问前端
-打开浏览器访问 http://localhost:3000 使用 Web 界面
+无需安装配置，支持所有功能：
+- 🆓 免费注册使用
+- 📄 多格式转换（HTML/PDF/截图）
+- 📧 自动邮件发送
+- 🔒 安全可靠的数据处理
 
 ## 🎯 核心特性
 

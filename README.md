@@ -144,11 +144,7 @@ pagemail/
 # 启动数据库
 docker-compose up -d db
 
-# 方式1: 自动生成环境配置（推荐）
-./scripts/generate-env.sh development
-# 然后编辑 .env 设置 SMTP 配置
-
-# 方式2: 手动配置环境变量
+# 配置环境变量
 cp .env.example .env
 # 编辑 .env 设置所有必需配置
 
@@ -174,10 +170,10 @@ curl -X POST http://localhost:8080/api/v1/pages/scrape \
   }'
 ```
 
-### 3. 检查环境配置（推荐）
+### 3. 验证配置
 ```bash
-# 运行环境检查脚本
-./scripts/check-env.sh
+# 检查健康状态
+curl http://localhost:8080/health
 ```
 
 ### 4. 访问前端

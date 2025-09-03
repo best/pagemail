@@ -48,9 +48,9 @@ cd web && npm run lint
 
 ### Environment Setup
 ```bash
-# Generate environment configuration with secure defaults
-./scripts/generate-env.sh development  # or production
-./scripts/check-env.sh                 # Validate configuration
+# Copy and configure environment variables
+cp .env.example .env
+# Edit .env file with your database and SMTP settings
 ```
 
 ## Project Architecture
@@ -85,7 +85,7 @@ cd web && npm run lint
 ## Development Workflow
 
 ### Setting Up Development Environment
-1. Copy `.env.example` to `.env` or use `./scripts/generate-env.sh development`
+1. Copy `.env.example` to `.env` and edit with your configuration
 2. Start database: `docker-compose up -d db`  
 3. Run migrations: `go run cmd/migrate/main.go -action=up`
 4. Start backend: `go run main.go`

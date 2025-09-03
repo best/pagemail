@@ -18,35 +18,19 @@
 - **网页抓取**: Chrome DevTools Protocol + HTTP客户端
 - **部署**: Docker + GitHub Actions
 
+## 🚀 快速体验
+
+立即使用官方托管的 PageMail 服务：
+
+**🌐 [https://pagemail.cn](https://pagemail.cn)**
+
+无需安装配置，支持所有功能：
+- 🆓 免费注册使用
+- 📄 多格式转换（HTML/PDF/截图）
+- 📧 自动邮件发送
+- 🔒 安全可靠的数据处理
+
 ## 快速开始
-
-### 开发环境
-
-1. 克隆项目
-```bash
-git clone https://github.com/best/pagemail.git
-cd pagemail
-```
-
-2. 复制环境变量配置
-```bash
-cp .env.example .env
-# 编辑 .env 文件，配置数据库和SMTP信息
-```
-
-3. 启动开发环境
-```bash
-# 启动数据库
-docker-compose up -d db
-
-# 启动后端服务
-go run main.go
-
-# 启动前端服务 (新终端)
-cd web && npm install && npm run dev
-```
-
-### 生产部署
 
 使用Docker Compose一键部署:
 
@@ -59,33 +43,9 @@ cp .env.example .env
 docker-compose up -d
 ```
 
-服务将在以下端口启动:
-- 后端API: http://localhost:8080
-- 前端界面: http://localhost:3000 (开发模式)
-- PostgreSQL: localhost:5432
-
-## 项目结构
-
-```
-pagemail/
-├── main.go                 # 程序入口
-├── internal/               # 内部包
-│   ├── api/               # API处理器
-│   ├── auth/              # 认证模块
-│   ├── database/          # 数据库连接
-│   ├── models/            # 数据模型
-│   ├── scraper/           # 网页抓取
-│   ├── converter/         # 文件转换
-│   └── mailer/            # 邮件发送
-├── migrations/            # 数据库迁移
-├── web/                   # Next.js前端
-│   ├── src/app/          # 页面路由
-│   ├── src/components/   # React组件
-│   └── src/lib/          # 工具函数
-├── docker-compose.yml     # 开发环境
-├── Dockerfile            # 生产镜像
-└── .github/workflows/    # CI/CD配置
-```
+部署完成后访问:
+- **应用服务**: http://localhost:8080 (前后端统一入口)
+- **数据库**: localhost:5432 (内部使用)
 
 ## 环境变量配置
 
@@ -124,18 +84,6 @@ pagemail/
 - [数据库文档](docs/DATABASE.md) - 数据库架构和迁移管理
 - [部署指南](docs/DEPLOYMENT.md) - Docker构建和生产环境部署
 
-## 🚀 快速体验
-
-立即使用官方托管的 PageMail 服务：
-
-**🌐 [https://pagemail.cn](https://pagemail.cn)**
-
-无需安装配置，支持所有功能：
-- 🆓 免费注册使用
-- 📄 多格式转换（HTML/PDF/截图）
-- 📧 自动邮件发送
-- 🔒 安全可靠的数据处理
-
 ## 🎯 核心特性
 
 ### ✨ 智能抓取策略
@@ -166,17 +114,28 @@ pagemail/
 - **安全防护**: bcrypt密码、JWT认证、CORS保护
 - **监控友好**: 结构化日志、健康检查接口
 
-## 🔄 更新日志
+## 项目结构
 
-### v1.0.0 (2025-09-01)
-- ✅ 完整的用户认证系统
-- ✅ 智能网页抓取引擎
-- ✅ 多格式文件转换
-- ✅ 自动邮件发送
-- ✅ 速率限制和配额管理
-- ✅ 响应式Web界面
-- ✅ Docker容器化部署
-- ✅ CI/CD自动构建
+```
+pagemail/
+├── main.go                 # 程序入口
+├── internal/               # 内部包
+│   ├── api/               # API处理器
+│   ├── auth/              # 认证模块
+│   ├── database/          # 数据库连接
+│   ├── models/            # 数据模型
+│   ├── scraper/           # 网页抓取
+│   ├── converter/         # 文件转换
+│   └── mailer/            # 邮件发送
+├── migrations/            # 数据库迁移
+├── web/                   # Next.js前端
+│   ├── src/app/          # 页面路由
+│   ├── src/components/   # React组件
+│   └── src/lib/          # 工具函数
+├── docker-compose.yml     # 开发环境
+├── Dockerfile            # 生产镜像
+└── .github/workflows/    # CI/CD配置
+```
 
 ## 🤝 贡献指南
 

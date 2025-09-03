@@ -15,7 +15,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go application
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o pagemail ./main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o pagemail ./cmd/pagemail
 
 # Stage 2: Build the Next.js frontend
 FROM node:20-alpine AS frontend-builder

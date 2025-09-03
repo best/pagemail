@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Backend Development
 ```bash
 # Start the main application
-go run main.go
+go run cmd/pagemail/main.go
 
 # Database migrations
 go run cmd/migrate/main.go -action=up     # Apply migrations
@@ -24,7 +24,7 @@ go run cmd/migrate/main.go -action=down   # Rollback migrations
 go run cmd/migrate/main.go -action=status # Check migration status
 
 # Build the application
-go build -o pagemail main.go
+go build -o pagemail ./cmd/pagemail
 
 # Run with Docker Compose (includes database)
 docker-compose up -d db    # Database only
@@ -56,7 +56,7 @@ cp .env.example .env
 ## Project Architecture
 
 ### Backend (Go)
-- **Entry Point**: `main.go` - Loads environment, connects to database, starts Gin server
+- **Entry Point**: `cmd/pagemail/main.go` - Loads environment, connects to database, starts Gin server
 - **API Layer**: `internal/api/` - HTTP handlers and routing (Gin framework)
   - `router.go` - Route definitions and middleware
   - `auth.go` - Authentication endpoints (register/login)
@@ -88,7 +88,7 @@ cp .env.example .env
 1. Copy `.env.example` to `.env` and edit with your configuration
 2. Start database: `docker-compose up -d db`  
 3. Run migrations: `go run cmd/migrate/main.go -action=up`
-4. Start backend: `go run main.go`
+4. Start backend: `go run cmd/pagemail/main.go`
 5. Start frontend: `cd frontend && npm install && npm run dev`
 
 ### Key Environment Variables

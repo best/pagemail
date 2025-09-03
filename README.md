@@ -133,7 +133,7 @@ pagemail/
 
 ## 📚 文档
 
-- [API 接口文档](API.md) - 详细的API使用说明
+- [API 接口文档](docs/API.md) - 详细的API使用说明
 - [部署指南](DEPLOYMENT.md) - 生产环境部署配置
 
 ## 🚀 快速体验

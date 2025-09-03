@@ -170,3 +170,50 @@ git commit -m "feat: add JWT authentication"
 git commit -m "fix: handle database connection errors"
 git commit -m "docs: update installation guide"
 ```
+
+## API Documentation (MANDATORY)
+
+**All API changes MUST be documented immediately:**
+
+### Documentation Location
+- **API Documentation**: `docs/API.md` - Complete API reference
+- **Keep Updated**: API docs MUST be updated with every interface change
+
+### API Documentation Rules (ENFORCED)
+1. **Immediate Updates**: Update `docs/API.md` whenever you:
+   - Add new endpoints
+   - Modify existing endpoints
+   - Change request/response formats
+   - Update authentication requirements
+   - Modify error responses
+
+2. **Required Documentation Elements**:
+   - **Endpoint**: HTTP method and URL path
+   - **Description**: What the endpoint does
+   - **Authentication**: Required auth type (JWT, guest, etc.)
+   - **Request Format**: Headers, body schema, parameters
+   - **Response Format**: Success and error response schemas
+   - **Examples**: Complete request/response examples
+
+3. **Documentation Standards**:
+   - Use consistent formatting with existing docs
+   - Include all possible error codes and messages
+   - Provide realistic example data
+   - Update table of contents if needed
+
+### API Change Workflow
+```bash
+# 1. Make API changes to code
+# 2. Update docs/API.md IMMEDIATELY  
+# 3. Test the changes
+# 4. Commit both code and docs together
+git add internal/api/ docs/API.md
+git commit -m "feat: add user profile endpoint"
+```
+
+### Documentation Validation
+Before any API commit, verify:
+- [ ] All new/changed endpoints documented in `docs/API.md`
+- [ ] Request/response examples are accurate
+- [ ] Error cases are documented
+- [ ] Authentication requirements are clear

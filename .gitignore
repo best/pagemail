@@ -45,5 +45,5 @@ frontend/cache/
 frontend/404/
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.idea/
+.vscode/

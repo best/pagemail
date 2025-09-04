@@ -38,3 +38,31 @@ main
 # Editor/IDE
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+/tmp/
+/logs/
+
+# Prevent accidental Next.js artifacts in wrong location
+/web/
+/dist/
+/.next/
+
+# Build artifacts that shouldn't be in root
+/build/
+/out/

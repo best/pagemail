@@ -48,7 +48,7 @@ COPY --from=backend-builder /app/pagemail /app/pagemail
 RUN chmod +x /app/pagemail
 
 # Copy frontend static export
-COPY --from=frontend-builder /app/dist /app/frontend
+COPY --from=frontend-builder /app/dist /app/frontend/dist
 
 # Set ownership
 RUN chown -R pagemail:pagemail /app

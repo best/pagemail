@@ -77,7 +77,7 @@ func SetupRouter() *gin.Engine {
 // setupStaticFileServing configures static file serving for the frontend
 func setupStaticFileServing(router *gin.Engine) {
 	// Check if we're in production mode (static files should exist)
-	webDir := "./frontend"
+	webDir := "./frontend/dist"
 	if _, err := os.Stat(webDir); os.IsNotExist(err) {
 		// No static files available, skip static serving
 		return

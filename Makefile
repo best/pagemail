@@ -19,16 +19,29 @@ POSTGRES_PASS := postgres
 help:
 	@echo "PageMail Development Commands:"
 	@echo ""
-	@echo "  build   - Build frontend + backend binary"
-	@echo "  deploy  - Start database and run application"
-	@echo "  docker  - Build Docker image"
-	@echo "  compose - Start services using Docker Compose"
-	@echo "  clean   - Clean build files and containers"
-	@echo "  test    - Run tests"
-	@echo "  lint    - Run Go and frontend linting"
-	@echo "  format  - Format Go and frontend code"
-	@echo "  status  - Show project status"
-	@echo "  help    - Show this help message"
+	@echo "Building & Deployment:"
+	@echo "  build        - Build frontend + backend binary"
+	@echo "  deploy       - Start database and run application"
+	@echo "  clean        - Clean build files (keep node_modules)"
+	@echo "  clean-all    - Clean everything including dependencies"
+	@echo ""
+	@echo "Dependency Management:"
+	@echo "  update       - Update all Go and npm dependencies"
+	@echo "  check-updates- Check for available dependency updates"
+	@echo "  audit        - Run security audit on all dependencies"
+	@echo ""
+	@echo "Code Quality:"
+	@echo "  test         - Run tests"
+	@echo "  lint         - Run Go and frontend linting"
+	@echo "  format       - Format Go and frontend code"
+	@echo ""
+	@echo "Docker & Services:"
+	@echo "  docker       - Build Docker image"
+	@echo "  compose      - Start services using Docker Compose"
+	@echo ""
+	@echo "Utilities:"
+	@echo "  status       - Show project status"
+	@echo "  help         - Show this help message"
 	@echo ""
 
 # Build targets
@@ -39,7 +52,17 @@ build: build-frontend build-backend start-db
 .PHONY: build-frontend
 build-frontend:
 	@echo "🔨 Building frontend..."
-	cd frontend && npm ci && npm run build
+	@if [ ! -d frontend/node_modules ]; then \
+		echo "📦 Installing dependencies..."; \
+		cd frontend && npm install; \
+	elif [ ! -f frontend/package-lock.json ]; then \
+		echo "📦 Generating package-lock.json..."; \
+		cd frontend && npm install; \
+	else \
+		echo "📦 Using existing dependencies..."; \
+		cd frontend && npm ci; \
+	fi
+	cd frontend && npm run build
 
 .PHONY: build-backend
 build-backend:
@@ -90,15 +113,28 @@ migrate-up:
 # Clean targets
 .PHONY: clean
 clean: clean-build clean-db clean-compose clean-docker
-	@echo "✨ Cleanup completed"
+	@echo "✨ Lightweight cleanup completed"
+
+.PHONY: clean-all
+clean-all: clean-build-all clean-db clean-compose clean-docker
+	@echo "✨ Complete cleanup completed"
 
 .PHONY: clean-build
 clean-build:
-	@echo "🧹 Cleaning build files..."
+	@echo "🧹 Cleaning build files (keeping node_modules)..."
 	@rm -f $(BINARY_PATH)
 	@rm -rf frontend/dist
 	@rm -rf frontend/.next
 	@echo "📁 Build files cleaned"
+
+.PHONY: clean-build-all
+clean-build-all:
+	@echo "🧹 Cleaning all build files and dependencies..."
+	@rm -f $(BINARY_PATH)
+	@rm -rf frontend/dist
+	@rm -rf frontend/.next
+	@rm -rf frontend/node_modules
+	@echo "📁 All build files and dependencies cleaned"
 
 .PHONY: clean-db
 clean-db:
@@ -221,3 +257,62 @@ compose: docker
 .PHONY: logs
 logs:
 	@docker logs $(POSTGRES_CONTAINER) 2>/dev/null || echo "No container logs available"
+
+# Update targets
+.PHONY: update
+update: update-go update-frontend
+	@echo "✅ All dependencies updated successfully"
+
+.PHONY: update-go
+update-go:
+	@echo "📦 Updating Go dependencies..."
+	go get -u ./...
+	go mod tidy
+	@echo "✅ Go dependencies updated"
+
+.PHONY: update-frontend
+update-frontend:
+	@echo "📦 Updating frontend dependencies..."
+	@if [ ! -d frontend/node_modules ]; then \
+		echo "🔧 Installing dependencies first..."; \
+		cd frontend && npm install; \
+	fi
+	cd frontend && npm update
+	@echo "✅ Frontend dependencies updated"
+
+.PHONY: check-updates
+check-updates: check-updates-go check-updates-frontend
+	@echo "📊 Dependency check completed"
+
+.PHONY: check-updates-go
+check-updates-go:
+	@echo "🔍 Checking Go dependency updates..."
+	@go list -u -m all | grep -v "^[[:space:]]*$$" | head -10 || echo "All Go dependencies are up to date"
+
+.PHONY: check-updates-frontend
+check-updates-frontend:
+	@echo "🔍 Checking frontend dependency updates..."
+	@if [ -d frontend/node_modules ]; then \
+		cd frontend && npm outdated || echo "All frontend dependencies are up to date"; \
+	else \
+		echo "⚠️  Run 'make build' first to install frontend dependencies"; \
+	fi
+
+.PHONY: audit
+audit: audit-go audit-frontend
+	@echo "🔒 Security audit completed"
+
+.PHONY: audit-go
+audit-go:
+	@echo "🔒 Auditing Go dependencies..."
+	@go mod verify
+	@echo "✅ Go dependencies verified"
+
+.PHONY: audit-frontend
+audit-frontend:
+	@echo "🔒 Auditing frontend dependencies..."
+	@if [ -d frontend/node_modules ]; then \
+		cd frontend && npm audit; \
+	else \
+		echo "⚠️  Run 'make build' first to install frontend dependencies"; \
+	fi

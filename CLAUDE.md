@@ -15,35 +15,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Backend Development
 ```bash
-# Start the main application
-go run cmd/pagemail/main.go
-
-# Database migrations
-go run cmd/migrate/main.go -action=up     # Apply migrations
-go run cmd/migrate/main.go -action=down   # Rollback migrations  
-go run cmd/migrate/main.go -action=status # Check migration status
-
-# Build the application
-go build -o pagemail ./cmd/pagemail
-
-# Run with Docker Compose (includes database)
-docker-compose up -d db    # Database only
-docker-compose up -d       # Full stack
+# MANDATORY: ONLY use make commands for all development tasks
+make build    # Build frontend + backend + start database
+make deploy   # Run migrations and start application 
+make clean    # Clean all build files and stop services
+make compose  # Build Docker image and run full stack
+make status   # Check project build status
 ```
 
 ### Frontend Development
 ```bash
-# Install dependencies
-cd frontend && npm install
-
-# Start development server with Turbopack
-cd frontend && npm run dev
-
-# Build for production
-cd frontend && npm run build
-
-# Run linting
-cd frontend && npm run lint
+# MANDATORY: ONLY use make commands - no manual frontend commands
+make build    # Builds frontend automatically as part of full build
+make clean    # Clean frontend build files
+make status   # Check if frontend is built
 ```
 
 ### Environment Setup
@@ -51,6 +36,10 @@ cd frontend && npm run lint
 # Copy and configure environment variables
 cp .env.example .env
 # Edit .env file with your database and SMTP settings
+
+# After configuration, use make commands only
+make build    # Build everything
+make deploy   # Start application
 ```
 
 ## Project Architecture
@@ -86,10 +75,11 @@ cp .env.example .env
 
 ### Setting Up Development Environment
 1. Copy `.env.example` to `.env` and edit with your configuration
-2. Start database: `docker-compose up -d db`  
-3. Run migrations: `go run cmd/migrate/main.go -action=up`
-4. Start backend: `go run cmd/pagemail/main.go`
-5. Start frontend: `cd frontend && npm install && npm run dev`
+2. Use make commands only:
+   ```bash
+   make build    # Build everything (frontend + backend + database)
+   make deploy   # Deploy and start application
+   ```
 
 ### Key Environment Variables
 - **Database**: DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_SSLMODE
@@ -112,11 +102,9 @@ The system uses intelligent scraping with HTTP-first approach:
 
 ### Running Tests
 ```bash
-# Backend tests (when available)
-go test ./...
-
-# Frontend linting
-cd frontend && npm run lint
+# MANDATORY: Use make commands only
+make test     # Run all tests
+make lint     # Run all linting
 ```
 
 ### Health Checks

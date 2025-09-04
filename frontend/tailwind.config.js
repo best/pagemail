@@ -12,8 +12,24 @@ module.exports = {
         foreground: "var(--color-foreground)",
       },
       fontFamily: {
-        sans: ["var(--font-sans)"],
-        mono: ["var(--font-mono)"],
+        sans: [
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont", 
+          "Segoe UI",
+          "Roboto",
+          "Helvetica Neue",
+          "Arial",
+          "sans-serif"
+        ],
+        mono: [
+          "SF Mono",
+          "Monaco",
+          "Inconsolata",
+          "Roboto Mono",
+          "Consolas",
+          "monospace"
+        ],
       },
     },
   },

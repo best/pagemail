@@ -22,7 +22,7 @@ help:
 	@echo "Building & Deployment:"
 	@echo "  build        - Build frontend + backend binary"
 	@echo "  deploy       - Start database and run application"
-	@echo "  clean        - Clean build files (keep node_modules)"
+	@echo "  clean        - Clean build files and frontend dependencies"
 	@echo "  clean-all    - Clean everything including dependencies"
 	@echo ""
 	@echo "Dependency Management:"
@@ -55,12 +55,8 @@ build-frontend:
 	@if [ ! -d frontend/node_modules ]; then \
 		echo "📦 Installing dependencies..."; \
 		cd frontend && npm install; \
-	elif [ ! -f frontend/package-lock.json ]; then \
-		echo "📦 Generating package-lock.json..."; \
-		cd frontend && npm install; \
 	else \
 		echo "📦 Using existing dependencies..."; \
-		cd frontend && npm ci; \
 	fi
 	cd frontend && npm run build
 
@@ -121,11 +117,13 @@ clean-all: clean-build-all clean-db clean-compose clean-docker
 
 .PHONY: clean-build
 clean-build:
-	@echo "🧹 Cleaning build files (keeping node_modules)..."
+	@echo "🧹 Cleaning build files and frontend dependencies..."
 	@rm -f $(BINARY_PATH)
 	@rm -rf frontend/dist
 	@rm -rf frontend/.next
-	@echo "📁 Build files cleaned"
+	@rm -rf frontend/node_modules
+	@rm -f frontend/package-lock.json
+	@echo "📁 Build files and frontend dependencies cleaned"
 
 .PHONY: clean-build-all
 clean-build-all:

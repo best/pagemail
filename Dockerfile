@@ -22,16 +22,11 @@ FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app
 
-# Copy package files
-COPY frontend/package*.json ./
-RUN npm ci
+# Copy source code  
+COPY frontend/ ./
 
-# Copy source code
-COPY frontend/ .
-
-# CRITICAL: Force clean reinstall to ensure native modules match target architecture
-# This fixes lightningcss.linux-arm64-gnu.node missing in glibc environment
-RUN rm -rf node_modules package-lock.json && npm install
+# Install dependencies (ensures native modules built for target architecture)
+RUN npm install
 
 # Build with properly installed native modules
 RUN npm run build

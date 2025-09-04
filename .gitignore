@@ -33,6 +33,9 @@ pagemail.exe
 migrate-tool
 main
 
+# User generated files
+/files/
+
 # Note: Frontend has its own .gitignore file for frontend-specific ignores
 
 # Editor/IDE

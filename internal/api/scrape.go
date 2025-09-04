@@ -103,8 +103,13 @@ func processRequest(request *models.Request) {
 	ext := converterManager.GetOutputExtension(request.Format)
 	filename := fmt.Sprintf("%s_%d_%d%s", request.Format, request.ID, time.Now().Unix(), ext)
 
+	// Get files directory from environment variable or use default
+	filesDir := os.Getenv("FILES_DIR")
+	if filesDir == "" {
+		filesDir = "files"
+	}
+	
 	// Ensure files directory exists
-	filesDir := "files"
 	if _, err := os.Stat(filesDir); os.IsNotExist(err) {
 		os.MkdirAll(filesDir, 0755)
 	}

@@ -26,8 +26,14 @@ WORKDIR /app
 COPY frontend/package*.json ./
 RUN npm ci
 
-# Copy source code and build
+# Copy source code
 COPY frontend/ .
+
+# CRITICAL: Force clean reinstall to ensure native modules match target architecture
+# This fixes lightningcss.linux-arm64-gnu.node missing in glibc environment
+RUN rm -rf node_modules package-lock.json && npm install
+
+# Build with properly installed native modules
 RUN npm run build
 
 # Stage 3: Final runtime image

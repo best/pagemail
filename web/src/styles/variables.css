@@ -1,0 +1,68 @@
+:root {
+  /* Brand Colors */
+  --pm-primary: #4F46E5;
+  --pm-primary-light: #6366F1;
+  --pm-primary-dark: #4338CA;
+  --pm-secondary: #F43F5E;
+  --pm-bg-page: #F8FAFC;
+  --pm-bg-card: #FFFFFF;
+  --pm-bg-elevated: #FFFFFF;
+  --pm-sidebar-bg: #0F172A;
+  --pm-sidebar-light: #1E293B;
+  --pm-text-heading: #1E293B;
+  --pm-text-body: #475569;
+  --pm-text-muted: #94A3B8;
+  --pm-border-color: #E2E8F0;
+
+  /* Element Plus Overrides */
+  --el-color-primary: var(--pm-primary);
+  --el-color-primary-light-3: #818CF8;
+  --el-color-primary-light-5: #A5B4FC;
+  --el-color-primary-light-7: #C7D2FE;
+  --el-color-primary-light-9: #EEF2FF;
+  --el-border-radius-base: 8px;
+  --el-border-radius-small: 6px;
+
+  /* Typography */
+  --pm-font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Shadows */
+  --pm-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --pm-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --pm-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Spacing */
+  --pm-spacing-1: 0.25rem;
+  --pm-spacing-2: 0.5rem;
+  --pm-spacing-3: 0.75rem;
+  --pm-spacing-4: 1rem;
+  --pm-spacing-6: 1.5rem;
+  --pm-spacing-8: 2rem;
+}
+
+html.dark,
+:root.dark {
+  --pm-bg-page: #0F172A;
+  --pm-bg-card: #1E293B;
+  --pm-bg-elevated: #334155;
+  --pm-text-heading: #F1F5F9;
+  --pm-text-body: #CBD5E1;
+  --pm-text-muted: #64748B;
+  --pm-border-color: #334155;
+
+  /* Dark mode shadows - subtle with slight glow */
+  --pm-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --pm-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --pm-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+
+  /* Element Plus dark overrides */
+  --el-color-primary-light-3: #6366F1;
+  --el-color-primary-light-5: #4F46E5;
+  --el-color-primary-light-7: #4338CA;
+  --el-color-primary-light-9: #312E81;
+}
+
+body {
+  font-family: var(--pm-font-family);
+  background-color: var(--pm-bg-page);
+}

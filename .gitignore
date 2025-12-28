@@ -1,0 +1,73 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/pagemail
+/bin/
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.html
+
+# Dependency directories
+/vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Docker Compose override
+docker-compose.yaml
+docker-compose.yml
+docker-compose.override.yaml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build output
+/dist/
+/build/
+
+# Frontend
+/web/node_modules/
+/web/dist/
+/web/.vite/
+/web/*.local
+
+# Logs
+*.log
+logs/
+
+# Storage (local uploads)
+/storage/
+/uploads/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+/tmp/
+*.tmp
+
+# Coverage
+coverage/
+
+# Atlas
+/internal/db/migrations/*.sum

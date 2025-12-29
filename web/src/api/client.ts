@@ -44,10 +44,28 @@ apiClient.interceptors.response.use(
     const problem = error.response?.data
 
     if (status === 401) {
-      // Clear auth data and redirect
-      localStorage.removeItem('auth')
-      ElMessage.error('Session expired. Please login again.')
-      window.location.href = '/login'
+      const requestUrl = error.config?.url || ''
+      const baseURL = error.config?.baseURL || ''
+      const responseUrl = (error.request as XMLHttpRequest | undefined)?.responseURL || ''
+      const fullUrl = `${baseURL}${requestUrl}`
+      const authUrlPattern = /\/auth\/(login|register)(\b|\/)/
+      const isAuthRequest =
+        authUrlPattern.test(requestUrl) ||
+        authUrlPattern.test(fullUrl) ||
+        authUrlPattern.test(responseUrl)
+      const currentPath = window.location.pathname
+      const isAuthRoute = currentPath.endsWith('/login') || currentPath.endsWith('/register')
+
+      if (isAuthRequest) {
+        localStorage.removeItem('auth')
+        ElMessage.error(problem?.detail || 'Invalid credentials')
+      } else {
+        localStorage.removeItem('auth')
+        ElMessage.error('Session expired. Please login again.')
+        if (!isAuthRoute) {
+          window.location.href = '/login'
+        }
+      }
     } else if (status === 403) {
       ElMessage.error('Access denied.')
     } else if (problem?.title) {

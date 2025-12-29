@@ -29,7 +29,7 @@ async function handleSubmit() {
   try {
     await authStore.login(form.email, form.password)
     ElMessage.success('Login successful')
-    router.push('/')
+    router.push('/dashboard')
   } catch (error) {
     // Error handled by interceptor
   } finally {

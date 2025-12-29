@@ -23,7 +23,7 @@ const authStore = useAuthStore()
 
 const menuItems = computed(() => {
   const items = [
-    { index: '/', title: 'Dashboard', icon: House },
+    { index: '/dashboard', title: 'Dashboard', icon: House },
     { index: '/tasks', title: 'Tasks', icon: Document },
     { index: '/settings', title: 'Settings', icon: Setting }
   ]

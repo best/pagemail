@@ -4,6 +4,17 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: '/',
+      component: () => import('@/layouts/LandingLayout.vue'),
+      children: [
+        {
+          path: '',
+          name: 'landing',
+          component: () => import('@/views/LandingView.vue')
+        }
+      ]
+    },
+    {
       path: '/login',
       component: () => import('@/layouts/AuthLayout.vue'),
       children: [
@@ -28,7 +39,7 @@ const router = createRouter({
       ]
     },
     {
-      path: '/',
+      path: '/dashboard',
       component: () => import('@/layouts/MainLayout.vue'),
       meta: { requiresAuth: true },
       children: [
@@ -36,57 +47,72 @@ const router = createRouter({
           path: '',
           name: 'dashboard',
           component: () => import('@/views/DashboardView.vue')
-        },
+        }
+      ]
+    },
+    {
+      path: '/tasks',
+      component: () => import('@/layouts/MainLayout.vue'),
+      meta: { requiresAuth: true },
+      children: [
         {
-          path: 'tasks',
+          path: '',
           name: 'tasks',
           component: () => import('@/views/TaskListView.vue')
         },
         {
-          path: 'tasks/new',
+          path: 'new',
           name: 'task-create',
           component: () => import('@/views/TaskCreateView.vue')
         },
         {
-          path: 'tasks/:id',
+          path: ':id',
           name: 'task-detail',
           component: () => import('@/views/TaskDetailView.vue')
-        },
+        }
+      ]
+    },
+    {
+      path: '/settings',
+      component: () => import('@/layouts/MainLayout.vue'),
+      meta: { requiresAuth: true },
+      children: [
         {
-          path: 'settings',
+          path: '',
           name: 'settings',
           component: () => import('@/views/SettingsView.vue')
         },
         {
-          path: 'settings/smtp',
+          path: 'smtp',
           name: 'settings-smtp',
           component: () => import('@/views/SmtpConfigView.vue')
         },
         {
-          path: 'settings/webhooks',
+          path: 'webhooks',
           name: 'settings-webhooks',
           component: () => import('@/views/WebhookConfigView.vue')
+        }
+      ]
+    },
+    {
+      path: '/admin',
+      component: () => import('@/layouts/MainLayout.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+      children: [
+        {
+          path: 'users',
+          name: 'admin-users',
+          component: () => import('@/views/admin/UserManagementView.vue')
         },
         {
-          path: 'admin',
-          meta: { requiresAdmin: true },
-          children: [
-            {
-              path: 'users',
-              name: 'admin-users',
-              component: () => import('@/views/admin/UserManagementView.vue')
-            },
-            {
-              path: 'system',
-              name: 'admin-system',
-              component: () => import('@/views/admin/SystemConfigView.vue')
-            },
-            {
-              path: 'audit',
-              name: 'admin-audit',
-              component: () => import('@/views/admin/AuditLogView.vue')
-            }
-          ]
+          path: 'system',
+          name: 'admin-system',
+          component: () => import('@/views/admin/SystemConfigView.vue')
+        },
+        {
+          path: 'audit',
+          name: 'admin-audit',
+          component: () => import('@/views/admin/AuditLogView.vue')
         }
       ]
     },

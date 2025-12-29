@@ -60,9 +60,9 @@ onMounted(fetchTasks)
 
 <template>
   <div class="dashboard">
-    <div class="dashboard-header">
+    <div class="dashboard-header anim-up">
       <div class="header-content">
-        <h1>{{ timeGreeting }}, {{ userName }}</h1>
+        <h1><span class="gradient-text">{{ timeGreeting }}</span>, {{ userName }}</h1>
         <p>Here's an overview of your web page captures</p>
       </div>
       <el-button type="primary" size="large" :icon="Plus" @click="$router.push('/tasks/new')">
@@ -70,7 +70,7 @@ onMounted(fetchTasks)
       </el-button>
     </div>
 
-    <el-row :gutter="20" class="stats">
+    <el-row :gutter="20" class="stats anim-up d1">
       <el-col :xs="24" :sm="8">
         <div class="stat-card primary">
           <div class="stat-icon">
@@ -80,7 +80,7 @@ onMounted(fetchTasks)
             <div class="stat-label">Total Captures</div>
             <div class="stat-value">{{ stats.total }}</div>
           </div>
-          <el-icon class="stat-bg-icon"><Document /></el-icon>
+          <el-icon class="stat-bg-icon" aria-hidden="true"><Document /></el-icon>
         </div>
       </el-col>
       <el-col :xs="24" :sm="8">
@@ -92,7 +92,7 @@ onMounted(fetchTasks)
             <div class="stat-label">Completed</div>
             <div class="stat-value">{{ stats.completed }}</div>
           </div>
-          <el-icon class="stat-bg-icon"><Finished /></el-icon>
+          <el-icon class="stat-bg-icon" aria-hidden="true"><Finished /></el-icon>
         </div>
       </el-col>
       <el-col :xs="24" :sm="8">
@@ -104,17 +104,17 @@ onMounted(fetchTasks)
             <div class="stat-label">Pending</div>
             <div class="stat-value">{{ stats.pending }}</div>
           </div>
-          <el-icon class="stat-bg-icon"><Warning /></el-icon>
+          <el-icon class="stat-bg-icon" aria-hidden="true"><Warning /></el-icon>
         </div>
       </el-col>
     </el-row>
 
-    <div class="section-header">
+    <div class="section-header anim-up d2">
       <h2>Recent Activity</h2>
       <el-button text type="primary" @click="$router.push('/tasks')">View All</el-button>
     </div>
 
-    <el-card class="recent-tasks" shadow="never">
+    <el-card class="recent-tasks anim-up d3" shadow="never">
       <el-alert
         v-if="loadError"
         title="Failed to load tasks"
@@ -149,6 +149,20 @@ onMounted(fetchTasks)
 </template>
 
 <style scoped>
+/* Entry Animations */
+.anim-up {
+  opacity: 0;
+  animation: slideUp 0.5s ease-out forwards;
+}
+.d1 { animation-delay: 0.1s; }
+.d2 { animation-delay: 0.2s; }
+.d3 { animation-delay: 0.3s; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .dashboard {
   max-width: 1200px;
   margin: 0 auto;
@@ -169,6 +183,13 @@ onMounted(fetchTasks)
   color: var(--pm-text-heading);
 }
 
+.gradient-text {
+  background: linear-gradient(135deg, var(--pm-primary) 0%, var(--pm-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .dashboard-header p {
   margin: 8px 0 0;
   color: var(--pm-text-muted);
@@ -184,16 +205,30 @@ onMounted(fetchTasks)
   align-items: flex-start;
   gap: 16px;
   padding: 24px;
-  background: var(--pm-bg-card);
-  border-radius: 12px;
-  box-shadow: var(--pm-shadow-md);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+html.dark .stat-card {
+  background: rgba(30, 41, 59, 0.65);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--pm-shadow-lg);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-color: rgba(79, 70, 229, 0.3);
+}
+
+html.dark .stat-card:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
 }
 
 .stat-icon {
@@ -278,12 +313,23 @@ html.dark .stat-card.warning .stat-icon {
 
 .recent-tasks {
   border: none;
-  background: var(--pm-bg-card);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+}
+
+html.dark .recent-tasks {
+  background: rgba(30, 41, 59, 0.65);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 :deep(.el-table) {
   --el-table-border-color: transparent;
+  background: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: transparent;
 }
 
 :deep(.el-table__inner-wrapper::before) {
@@ -295,7 +341,11 @@ html.dark .stat-card.warning .stat-icon {
 }
 
 :deep(.el-table tr:hover > td) {
-  background-color: var(--el-fill-color-lighter) !important;
+  background-color: rgba(79, 70, 229, 0.04) !important;
+}
+
+html.dark :deep(.el-table tr:hover > td) {
+  background-color: rgba(99, 102, 241, 0.08) !important;
 }
 
 @media (max-width: 768px) {
@@ -308,5 +358,9 @@ html.dark .stat-card.warning .stat-icon {
   .stat-card {
     margin-bottom: 16px;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-up { animation: none; opacity: 1; }
 }
 </style>

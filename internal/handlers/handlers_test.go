@@ -13,6 +13,7 @@ import (
 
 	"pagemail/internal/config"
 	"pagemail/internal/models"
+	"pagemail/internal/storage"
 )
 
 func setupTestDB(t *testing.T) *gorm.DB {
@@ -50,11 +51,16 @@ func setupTestHandler(t *testing.T) (*Handler, *gin.Engine) {
 		},
 		Storage: config.StorageConfig{
 			Backend:   "local",
-			LocalPath: "/tmp/test",
+			LocalPath: t.TempDir(),
 		},
 	}
 
-	h := New(cfg, db)
+	store, err := storage.NewLocalStorage(cfg.Storage.LocalPath)
+	if err != nil {
+		t.Fatalf("Failed to create test storage: %v", err)
+	}
+
+	h := New(cfg, db, store)
 	r := gin.New()
 
 	return h, r

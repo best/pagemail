@@ -166,7 +166,7 @@ func (h *Handler) Login(c *gin.Context) {
 	user.LastLoginAt = &now
 	h.db.Save(&user)
 
-	accessToken, err := h.generateToken(user, h.cfg.JWT.AccessExpiry)
+	accessToken, err := h.generateToken(&user, h.cfg.JWT.AccessExpiry)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"type":   "https://pagemail.app/errors/internal",
@@ -177,7 +177,7 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	refreshToken, err := h.generateToken(user, h.cfg.JWT.RefreshExpiry)
+	refreshToken, err := h.generateToken(&user, h.cfg.JWT.RefreshExpiry)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"type":   "https://pagemail.app/errors/internal",
@@ -201,7 +201,7 @@ func (h *Handler) Login(c *gin.Context) {
 	})
 }
 
-func (h *Handler) generateToken(user models.User, expiry time.Duration) (string, error) {
+func (h *Handler) generateToken(user *models.User, expiry time.Duration) (string, error) {
 	claims := middleware.Claims{
 		UserID: user.ID.String(),
 		Email:  user.Email,

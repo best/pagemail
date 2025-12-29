@@ -69,7 +69,7 @@ func (s *SMTPSender) Send(msg *EmailMessage) error {
 
 	d := gomail.NewDialer(s.config.Host, s.config.Port, s.config.Username, s.config.Password)
 	if s.config.UseTLS {
-		d.TLSConfig = &tls.Config{ServerName: s.config.Host}
+		d.TLSConfig = &tls.Config{ServerName: s.config.Host, MinVersion: tls.VersionTLS12}
 	}
 
 	if err := d.DialAndSend(m); err != nil {
@@ -82,7 +82,7 @@ func (s *SMTPSender) Send(msg *EmailMessage) error {
 func (s *SMTPSender) TestConnection() error {
 	d := gomail.NewDialer(s.config.Host, s.config.Port, s.config.Username, s.config.Password)
 	if s.config.UseTLS {
-		d.TLSConfig = &tls.Config{ServerName: s.config.Host}
+		d.TLSConfig = &tls.Config{ServerName: s.config.Host, MinVersion: tls.VersionTLS12}
 	}
 
 	closer, err := d.Dial()

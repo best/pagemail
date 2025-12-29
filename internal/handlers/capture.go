@@ -132,15 +132,15 @@ func (h *Handler) ListCaptures(c *gin.Context) {
 	query.Order("created_at DESC").Offset((page - 1) * limit).Limit(limit).Find(&tasks)
 
 	result := make([]gin.H, len(tasks))
-	for i, t := range tasks {
+	for i := range tasks {
 		result[i] = gin.H{
-			"id":         t.ID,
-			"url":        t.URL,
-			"formats":    intToFormats(t.Formats),
-			"status":     t.Status,
-			"error":      t.ErrorMessage,
-			"created_at": t.CreatedAt,
-			"updated_at": t.UpdatedAt,
+			"id":         tasks[i].ID,
+			"url":        tasks[i].URL,
+			"formats":    intToFormats(tasks[i].Formats),
+			"status":     tasks[i].Status,
+			"error":      tasks[i].ErrorMessage,
+			"created_at": tasks[i].CreatedAt,
+			"updated_at": tasks[i].UpdatedAt,
 		}
 	}
 
@@ -162,12 +162,12 @@ func (h *Handler) GetCapture(c *gin.Context) {
 	h.db.Where("task_id = ?", task.ID).Find(&outputs)
 
 	outputResult := make([]gin.H, len(outputs))
-	for i, o := range outputs {
+	for i := range outputs {
 		outputResult[i] = gin.H{
-			"id":     o.ID,
-			"format": o.Format,
-			"size":   o.SizeBytes,
-			"path":   o.ObjectKey,
+			"id":     outputs[i].ID,
+			"format": outputs[i].Format,
+			"size":   outputs[i].SizeBytes,
+			"path":   outputs[i].ObjectKey,
 		}
 	}
 
@@ -175,12 +175,12 @@ func (h *Handler) GetCapture(c *gin.Context) {
 	h.db.Where("task_id = ?", task.ID).Order("created_at DESC").Find(&deliveries)
 
 	deliveryHistory := make([]gin.H, len(deliveries))
-	for i, d := range deliveries {
+	for i := range deliveries {
 		deliveryHistory[i] = gin.H{
-			"channel":      d.Channel,
-			"status":       d.Status,
-			"attempt_time": d.CreatedAt,
-			"error":        d.LastError,
+			"channel":      deliveries[i].Channel,
+			"status":       deliveries[i].Status,
+			"attempt_time": deliveries[i].CreatedAt,
+			"error":        deliveries[i].LastError,
 		}
 	}
 
@@ -278,12 +278,12 @@ func (h *Handler) ListCaptureOutputs(c *gin.Context) {
 	h.db.Where("task_id = ?", task.ID).Find(&outputs)
 
 	result := make([]gin.H, len(outputs))
-	for i, o := range outputs {
+	for i := range outputs {
 		result[i] = gin.H{
-			"id":         o.ID,
-			"format":     o.Format,
-			"size":       o.SizeBytes,
-			"created_at": o.CreatedAt,
+			"id":         outputs[i].ID,
+			"format":     outputs[i].Format,
+			"size":       outputs[i].SizeBytes,
+			"created_at": outputs[i].CreatedAt,
 		}
 	}
 
@@ -353,13 +353,13 @@ func (h *Handler) ListDeliveries(c *gin.Context) {
 	h.db.Where("task_id = ?", task.ID).Order("created_at DESC").Find(&deliveries)
 
 	result := make([]gin.H, len(deliveries))
-	for i, d := range deliveries {
+	for i := range deliveries {
 		result[i] = gin.H{
-			"id":         d.ID,
-			"channel":    d.Channel,
-			"status":     d.Status,
-			"error":      d.LastError,
-			"created_at": d.CreatedAt,
+			"id":         deliveries[i].ID,
+			"channel":    deliveries[i].Channel,
+			"status":     deliveries[i].Status,
+			"error":      deliveries[i].LastError,
+			"created_at": deliveries[i].CreatedAt,
 		}
 	}
 

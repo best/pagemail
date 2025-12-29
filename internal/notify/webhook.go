@@ -50,6 +50,7 @@ type WebhookAttachment struct {
 	Reader      io.Reader
 }
 
+//nolint:gocyclo // Webhook sending has inherent complexity with multipart, retries, HMAC
 func (w *WebhookSender) Send(ctx context.Context, payload *WebhookPayload, attachments []WebhookAttachment) error {
 	var body bytes.Buffer
 	var contentType string

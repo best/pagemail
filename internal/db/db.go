@@ -115,11 +115,7 @@ func seedPermissions(db *gorm.DB) error {
 		return err
 	}
 
-	if err := assignRolePermissions(db, "user", userPerms); err != nil {
-		return err
-	}
-
-	return nil
+	return assignRolePermissions(db, "user", userPerms)
 }
 
 func assignRolePermissions(db *gorm.DB, role string, permNames []string) error {

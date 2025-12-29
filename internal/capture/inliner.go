@@ -2,6 +2,7 @@ package capture
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -200,7 +201,12 @@ func (i *Inliner) fetchResource(resourceURL string) (content []byte, contentType
 		return nil, "", err
 	}
 
-	resp, err := i.httpClient.Get(absURL)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, absURL, http.NoBody)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := i.httpClient.Do(req)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to fetch resource: %w", err)
 	}

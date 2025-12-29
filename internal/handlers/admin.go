@@ -19,15 +19,15 @@ func (h *Handler) AdminListUsers(c *gin.Context) {
 	h.db.Order("created_at DESC").Offset((page - 1) * limit).Limit(limit).Find(&users)
 
 	result := make([]gin.H, len(users))
-	for i, u := range users {
+	for i := range users {
 		result[i] = gin.H{
-			"id":            u.ID,
-			"email":         u.Email,
-			"role":          u.Role,
-			"is_active":     u.IsActive,
-			"last_login_at": u.LastLoginAt,
-			"created_at":    u.CreatedAt,
-			"updated_at":    u.UpdatedAt,
+			"id":            users[i].ID,
+			"email":         users[i].Email,
+			"role":          users[i].Role,
+			"is_active":     users[i].IsActive,
+			"last_login_at": users[i].LastLoginAt,
+			"created_at":    users[i].CreatedAt,
+			"updated_at":    users[i].UpdatedAt,
 		}
 	}
 
@@ -127,17 +127,17 @@ func (h *Handler) ListAuditLogs(c *gin.Context) {
 	h.db.Order("created_at DESC").Offset((page - 1) * limit).Limit(limit).Find(&logs)
 
 	result := make([]gin.H, len(logs))
-	for i, l := range logs {
+	for i := range logs {
 		result[i] = gin.H{
-			"id":            l.ID,
-			"actor_id":      l.ActorID,
-			"actor_email":   l.ActorEmail,
-			"action":        l.Action,
-			"resource_type": l.ResourceType,
-			"resource_id":   l.ResourceID,
-			"details":       l.Details,
-			"ip_address":    l.IPAddress,
-			"created_at":    l.CreatedAt,
+			"id":            logs[i].ID,
+			"actor_id":      logs[i].ActorID,
+			"actor_email":   logs[i].ActorEmail,
+			"action":        logs[i].Action,
+			"resource_type": logs[i].ResourceType,
+			"resource_id":   logs[i].ResourceID,
+			"details":       logs[i].Details,
+			"ip_address":    logs[i].IPAddress,
+			"created_at":    logs[i].CreatedAt,
 		}
 	}
 

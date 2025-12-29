@@ -36,19 +36,19 @@ func (h *Handler) ListSMTPProfiles(c *gin.Context) {
 	}
 
 	result := make([]gin.H, len(profiles))
-	for i, p := range profiles {
+	for i := range profiles {
 		result[i] = gin.H{
-			"id":         p.ID,
-			"name":       p.Name,
-			"host":       p.Host,
-			"port":       p.Port,
-			"username":   p.Username,
-			"from_email": p.FromEmail,
-			"from_name":  p.FromName,
-			"use_tls":    p.UseTLS,
-			"is_default": p.IsDefault,
-			"created_at": p.CreatedAt,
-			"updated_at": p.UpdatedAt,
+			"id":         profiles[i].ID,
+			"name":       profiles[i].Name,
+			"host":       profiles[i].Host,
+			"port":       profiles[i].Port,
+			"username":   profiles[i].Username,
+			"from_email": profiles[i].FromEmail,
+			"from_name":  profiles[i].FromName,
+			"use_tls":    profiles[i].UseTLS,
+			"is_default": profiles[i].IsDefault,
+			"created_at": profiles[i].CreatedAt,
+			"updated_at": profiles[i].UpdatedAt,
 		}
 	}
 
@@ -227,14 +227,14 @@ func (h *Handler) ListWebhooks(c *gin.Context) {
 	}
 
 	result := make([]gin.H, len(webhooks))
-	for i, w := range webhooks {
+	for i := range webhooks {
 		result[i] = gin.H{
-			"id":         w.ID,
-			"name":       w.Name,
-			"url":        w.URL,
-			"is_active":  w.IsActive,
-			"created_at": w.CreatedAt,
-			"updated_at": w.UpdatedAt,
+			"id":         webhooks[i].ID,
+			"name":       webhooks[i].Name,
+			"url":        webhooks[i].URL,
+			"is_active":  webhooks[i].IsActive,
+			"created_at": webhooks[i].CreatedAt,
+			"updated_at": webhooks[i].UpdatedAt,
 		}
 	}
 

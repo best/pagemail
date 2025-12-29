@@ -44,14 +44,14 @@ type EncryptionConfig struct {
 }
 
 type StorageConfig struct {
-	Backend       string `mapstructure:"STORAGE_BACKEND" validate:"required,oneof=local s3"`
-	LocalPath     string `mapstructure:"STORAGE_LOCAL_PATH"`
-	S3Endpoint    string `mapstructure:"STORAGE_S3_ENDPOINT"`
-	S3Region      string `mapstructure:"STORAGE_S3_REGION"`
-	S3Bucket      string `mapstructure:"STORAGE_S3_BUCKET"`
-	S3AccessKey   string `mapstructure:"STORAGE_S3_ACCESS_KEY"`
-	S3SecretKey   string `mapstructure:"STORAGE_S3_SECRET_KEY"`
-	S3UsePathStyle bool  `mapstructure:"STORAGE_S3_USE_PATH_STYLE"`
+	Backend        string `mapstructure:"STORAGE_BACKEND" validate:"required,oneof=local s3"`
+	LocalPath      string `mapstructure:"STORAGE_LOCAL_PATH"`
+	S3Endpoint     string `mapstructure:"STORAGE_S3_ENDPOINT"`
+	S3Region       string `mapstructure:"STORAGE_S3_REGION"`
+	S3Bucket       string `mapstructure:"STORAGE_S3_BUCKET"`
+	S3AccessKey    string `mapstructure:"STORAGE_S3_ACCESS_KEY"`
+	S3SecretKey    string `mapstructure:"STORAGE_S3_SECRET_KEY"`
+	S3UsePathStyle bool   `mapstructure:"STORAGE_S3_USE_PATH_STYLE"`
 }
 
 type SMTPConfig struct {

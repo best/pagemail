@@ -54,8 +54,8 @@ func TestValidateURL(t *testing.T) {
 
 func TestIsPrivateIP(t *testing.T) {
 	tests := []struct {
-		name     string
-		host     string
+		name      string
+		host      string
 		isPrivate bool
 	}{
 		// Private IPv4 ranges
@@ -95,11 +95,11 @@ func TestIsPrivateIP(t *testing.T) {
 
 func TestParseCookies(t *testing.T) {
 	tests := []struct {
-		name       string
-		cookieStr  string
-		domain     string
-		wantCount  int
-		wantFirst  string
+		name      string
+		cookieStr string
+		domain    string
+		wantCount int
+		wantFirst string
 	}{
 		{
 			name:      "single cookie",

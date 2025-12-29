@@ -116,6 +116,7 @@ func (d *Dispatcher) fetchAndDispatch() {
 		return
 	}
 
+	//nolint:gocritic // rangeValCopy: job is sent to channel which requires value type
 	for _, job := range jobs {
 		lockedBy := d.workerID
 
@@ -239,6 +240,7 @@ func (w *Worker) Start(ctx context.Context) {
 	}
 }
 
+//nolint:gocritic // hugeParam: job comes from channel which uses value type for simplicity
 func (w *Worker) process(ctx context.Context, job models.Job) {
 	log.Info().
 		Int("worker_id", w.id).
@@ -258,9 +260,9 @@ func (w *Worker) process(ctx context.Context, job models.Job) {
 	}
 
 	if err != nil {
-		w.handleFailure(job, err)
+		w.handleFailure(&job, err)
 	} else {
-		w.handleSuccess(job)
+		w.handleSuccess(&job)
 	}
 }
 
@@ -271,6 +273,7 @@ type CapturePayload struct {
 	Formats []string `json:"formats"`
 }
 
+//nolint:gocyclo,gocritic // Capture processing has inherent complexity; job from channel uses value type
 func (w *Worker) processCapture(ctx context.Context, job models.Job) error {
 	log.Info().Str("job_id", job.ID.String()).Msg("Processing capture job")
 
@@ -426,8 +429,8 @@ func parseCookies(cookieStr, targetURL string) []*proto.NetworkCookieParam {
 		return nil
 	}
 
-	var cookies []*proto.NetworkCookieParam
 	pairs := strings.Split(cookieStr, ";")
+	cookies := make([]*proto.NetworkCookieParam, 0, len(pairs))
 
 	for _, pair := range pairs {
 		pair = strings.TrimSpace(pair)
@@ -457,13 +460,14 @@ func parseCookies(cookieStr, targetURL string) []*proto.NetworkCookieParam {
 	return cookies
 }
 
+//nolint:gocritic,unparam // hugeParam: job from channel uses value type; ctx reserved for future use
 func (w *Worker) processDelivery(ctx context.Context, job models.Job) error {
 	log.Info().Str("job_id", job.ID.String()).Msg("Processing delivery job")
 	return nil
 }
 
-func (w *Worker) handleSuccess(job models.Job) {
-	w.db.Model(&job).Updates(map[string]interface{}{
+func (w *Worker) handleSuccess(job *models.Job) {
+	w.db.Model(job).Updates(map[string]interface{}{
 		"status":      models.JobStatusSuccess,
 		"locked_by":   nil,
 		"locked_at":   nil,
@@ -472,12 +476,12 @@ func (w *Worker) handleSuccess(job models.Job) {
 	log.Info().Str("job_id", job.ID.String()).Msg("Job completed successfully")
 }
 
-func (w *Worker) handleFailure(job models.Job, err error) {
+func (w *Worker) handleFailure(job *models.Job, err error) {
 	job.Attempts++
 	job.LastError = err.Error()
 
 	if job.Attempts >= job.MaxAttempts {
-		w.db.Model(&job).Updates(map[string]interface{}{
+		w.db.Model(job).Updates(map[string]interface{}{
 			"status":      models.JobStatusFailed,
 			"attempts":    job.Attempts,
 			"last_error":  job.LastError,
@@ -489,7 +493,7 @@ func (w *Worker) handleFailure(job models.Job, err error) {
 	} else {
 		retryDelay := time.Duration(10*(1<<job.Attempts)) * time.Second
 		runAt := time.Now().Add(retryDelay)
-		w.db.Model(&job).Updates(map[string]interface{}{
+		w.db.Model(job).Updates(map[string]interface{}{
 			"status":      models.JobStatusPending,
 			"attempts":    job.Attempts,
 			"last_error":  job.LastError,

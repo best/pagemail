@@ -40,8 +40,8 @@ func (p *Permission) BeforeCreate(tx *gorm.DB) error {
 }
 
 type RolePermission struct {
-	Role         string    `gorm:"primary_key" json:"role"`
-	PermissionID uuid.UUID `gorm:"type:uuid;primary_key" json:"permission_id"`
+	Role         string     `gorm:"primary_key" json:"role"`
+	PermissionID uuid.UUID  `gorm:"type:uuid;primary_key" json:"permission_id"`
 	Permission   Permission `gorm:"foreignKey:PermissionID" json:"permission,omitempty"`
 }
 
@@ -103,23 +103,23 @@ const (
 )
 
 type CaptureTask struct {
-	ID             uuid.UUID        `gorm:"type:uuid;primary_key" json:"id"`
-	UserID         uuid.UUID        `gorm:"type:uuid;not null;index" json:"user_id"`
-	User           User             `gorm:"foreignKey:UserID" json:"-"`
-	URL            string           `gorm:"not null" json:"url"`
-	Status         string           `gorm:"not null;default:pending;index" json:"status"`
-	Formats        int              `gorm:"not null;default:1" json:"formats"`
-	CookiesEnc     []byte           `json:"-"`
-	UserAgent      string           `json:"user_agent,omitempty"`
-	ViewportWidth  int              `gorm:"default:1920" json:"viewport_width"`
-	ViewportHeight int              `gorm:"default:1080" json:"viewport_height"`
-	WaitTimeoutMs  int              `gorm:"default:30000" json:"wait_timeout_ms"`
-	ErrorMessage   string           `json:"error_message,omitempty"`
-	CreatedAt      time.Time        `gorm:"index" json:"created_at"`
-	UpdatedAt      time.Time        `json:"updated_at"`
-	CompletedAt    *time.Time       `json:"completed_at,omitempty"`
-	Outputs        []CaptureOutput  `gorm:"foreignKey:TaskID" json:"outputs,omitempty"`
-	Deliveries     []Delivery       `gorm:"foreignKey:TaskID" json:"deliveries,omitempty"`
+	ID             uuid.UUID       `gorm:"type:uuid;primary_key" json:"id"`
+	UserID         uuid.UUID       `gorm:"type:uuid;not null;index" json:"user_id"`
+	User           User            `gorm:"foreignKey:UserID" json:"-"`
+	URL            string          `gorm:"not null" json:"url"`
+	Status         string          `gorm:"not null;default:pending;index" json:"status"`
+	Formats        int             `gorm:"not null;default:1" json:"formats"`
+	CookiesEnc     []byte          `json:"-"`
+	UserAgent      string          `json:"user_agent,omitempty"`
+	ViewportWidth  int             `gorm:"default:1920" json:"viewport_width"`
+	ViewportHeight int             `gorm:"default:1080" json:"viewport_height"`
+	WaitTimeoutMs  int             `gorm:"default:30000" json:"wait_timeout_ms"`
+	ErrorMessage   string          `json:"error_message,omitempty"`
+	CreatedAt      time.Time       `gorm:"index" json:"created_at"`
+	UpdatedAt      time.Time       `json:"updated_at"`
+	CompletedAt    *time.Time      `json:"completed_at,omitempty"`
+	Outputs        []CaptureOutput `gorm:"foreignKey:TaskID" json:"outputs,omitempty"`
+	Deliveries     []Delivery      `gorm:"foreignKey:TaskID" json:"deliveries,omitempty"`
 }
 
 func (c *CaptureTask) BeforeCreate(tx *gorm.DB) error {
@@ -154,9 +154,9 @@ const (
 )
 
 const (
-	DeliveryStatusPending   = "pending"
-	DeliveryStatusSent      = "sent"
-	DeliveryStatusFailed    = "failed"
+	DeliveryStatusPending = "pending"
+	DeliveryStatusSent    = "sent"
+	DeliveryStatusFailed  = "failed"
 )
 
 type Delivery struct {

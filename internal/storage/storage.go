@@ -20,13 +20,13 @@ type Storage interface {
 }
 
 type Config struct {
-	Backend       string
-	LocalPath     string
-	S3Endpoint    string
-	S3Region      string
-	S3Bucket      string
-	S3AccessKey   string
-	S3SecretKey   string
+	Backend        string
+	LocalPath      string
+	S3Endpoint     string
+	S3Region       string
+	S3Bucket       string
+	S3AccessKey    string
+	S3SecretKey    string
 	S3UsePathStyle bool
 }
 

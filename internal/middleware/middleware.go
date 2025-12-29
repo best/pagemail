@@ -99,7 +99,7 @@ func Auth(cfg *config.Config) gin.HandlerFunc {
 		}
 
 		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+		if len(parts) != 2 || !strings.EqualFold(parts[0], "bearer") {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"type":   "https://pagemail.app/errors/unauthorized",
 				"title":  "Unauthorized",

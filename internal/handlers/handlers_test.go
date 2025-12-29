@@ -70,7 +70,7 @@ func TestHealth(t *testing.T) {
 	h, r := setupTestHandler(t)
 	r.GET("/health", h.Health)
 
-	req := httptest.NewRequest(http.MethodGet, "/health", nil)
+	req := httptest.NewRequest(http.MethodGet, "/health", http.NoBody)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -92,7 +92,7 @@ func TestReady(t *testing.T) {
 	h, r := setupTestHandler(t)
 	r.GET("/ready", h.Ready)
 
-	req := httptest.NewRequest(http.MethodGet, "/ready", nil)
+	req := httptest.NewRequest(http.MethodGet, "/ready", http.NoBody)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -257,7 +257,7 @@ func TestGetCurrentUser(t *testing.T) {
 		h.GetCurrentUser(c)
 	})
 
-	req := httptest.NewRequest(http.MethodGet, "/me", nil)
+	req := httptest.NewRequest(http.MethodGet, "/me", http.NoBody)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -293,7 +293,7 @@ func TestParsePagination(t *testing.T) {
 				gotPage, gotLimit = parsePagination(c)
 			})
 
-			req := httptest.NewRequest(http.MethodGet, "/test?"+tt.query, nil)
+			req := httptest.NewRequest(http.MethodGet, "/test?"+tt.query, http.NoBody)
 			w := httptest.NewRecorder()
 			r.ServeHTTP(w, req)
 

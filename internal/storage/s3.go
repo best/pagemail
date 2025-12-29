@@ -18,16 +18,6 @@ type S3Storage struct {
 }
 
 func NewS3Storage(cfg *Config) (*S3Storage, error) {
-	customResolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-		if cfg.S3Endpoint != "" {
-			return aws.Endpoint{
-				URL:               cfg.S3Endpoint,
-				HostnameImmutable: true,
-			}, nil
-		}
-		return aws.Endpoint{}, &aws.EndpointNotFoundError{}
-	})
-
 	awsCfg, err := config.LoadDefaultConfig(context.Background(),
 		config.WithRegion(cfg.S3Region),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
@@ -35,7 +25,6 @@ func NewS3Storage(cfg *Config) (*S3Storage, error) {
 			cfg.S3SecretKey,
 			"",
 		)),
-		config.WithEndpointResolverWithOptions(customResolver),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load AWS config: %w", err)
@@ -43,6 +32,9 @@ func NewS3Storage(cfg *Config) (*S3Storage, error) {
 
 	client := s3.NewFromConfig(awsCfg, func(o *s3.Options) {
 		o.UsePathStyle = cfg.S3UsePathStyle
+		if cfg.S3Endpoint != "" {
+			o.BaseEndpoint = aws.String(cfg.S3Endpoint)
+		}
 	})
 
 	return &S3Storage{

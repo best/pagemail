@@ -86,6 +86,7 @@ func (b *Browser) Close() error {
 	return b.browser.Close()
 }
 
+//nolint:revive // CaptureOptions is clearer than Options in this context
 type CaptureOptions struct {
 	URL            string
 	Cookies        []*proto.NetworkCookieParam
@@ -96,6 +97,7 @@ type CaptureOptions struct {
 	WaitUntil      string
 }
 
+//nolint:revive // CaptureResult is clearer than Result in this context
 type CaptureResult struct {
 	HTML       []byte
 	PDF        []byte
@@ -104,6 +106,7 @@ type CaptureResult struct {
 	FinalURL   string
 }
 
+//nolint:gocyclo // Browser capture has inherent complexity with viewport, cookies, timeout, navigation
 func (b *Browser) Capture(ctx context.Context, opts *CaptureOptions) (*CaptureResult, error) {
 	if err := validateURL(opts.URL); err != nil {
 		return nil, err
@@ -272,9 +275,8 @@ func isPrivateIP(host string) bool {
 }
 
 func ParseCookies(cookieStr, domain string) []*proto.NetworkCookieParam {
-	var cookies []*proto.NetworkCookieParam
-
 	pairs := strings.Split(cookieStr, ";")
+	cookies := make([]*proto.NetworkCookieParam, 0, len(pairs))
 	for _, pair := range pairs {
 		pair = strings.TrimSpace(pair)
 		if pair == "" {

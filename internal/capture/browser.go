@@ -66,12 +66,12 @@ func NewBrowser(cfg *BrowserConfig) (*Browser, error) {
 		Set("hide-scrollbars").
 		Set("disable-features", "VizDisplayCompositor")
 
-	url, err := l.Launch()
+	browserURL, err := l.Launch()
 	if err != nil {
 		return nil, fmt.Errorf("failed to launch browser: %w", err)
 	}
 
-	browser := rod.New().ControlURL(url)
+	browser := rod.New().ControlURL(browserURL)
 	if err := browser.Connect(); err != nil {
 		return nil, fmt.Errorf("failed to connect to browser: %w", err)
 	}
@@ -271,7 +271,7 @@ func isPrivateIP(host string) bool {
 	return false
 }
 
-func ParseCookies(cookieStr string, domain string) []*proto.NetworkCookieParam {
+func ParseCookies(cookieStr, domain string) []*proto.NetworkCookieParam {
 	var cookies []*proto.NetworkCookieParam
 
 	pairs := strings.Split(cookieStr, ";")

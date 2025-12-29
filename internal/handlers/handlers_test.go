@@ -239,7 +239,9 @@ func TestLogin(t *testing.T) {
 
 			if tt.wantStatus == http.StatusOK {
 				var resp map[string]interface{}
-				json.Unmarshal(w.Body.Bytes(), &resp)
+				if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+					t.Fatalf("Failed to unmarshal response: %v", err)
+				}
 				if resp["access_token"] == nil {
 					t.Error("Login() response missing access_token")
 				}

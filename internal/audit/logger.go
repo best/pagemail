@@ -54,7 +54,7 @@ func (l *Logger) Log(entry *LogEntry) error {
 	return l.db.Create(&log).Error
 }
 
-func (l *Logger) LogFromContext(c *gin.Context, action string, resourceType string, resourceID *uuid.UUID, details interface{}) error {
+func (l *Logger) LogFromContext(c *gin.Context, action, resourceType string, resourceID *uuid.UUID, details interface{}) error {
 	var actorID *uuid.UUID
 	if userIDStr, exists := c.Get("user_id"); exists {
 		if id, err := uuid.Parse(userIDStr.(string)); err == nil {

@@ -6,10 +6,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 
 	"pagemail/internal/models"
 	"pagemail/internal/pkg/errors"
 	"pagemail/internal/queue"
+)
+
+const (
+	formatPDF        = "pdf"
+	formatHTML       = "html"
+	formatScreenshot = "screenshot"
 )
 
 type CreateCaptureRequest struct {
@@ -28,11 +35,11 @@ func formatsToInt(formats []string) int {
 	result := 0
 	for _, f := range formats {
 		switch f {
-		case "pdf":
+		case formatPDF:
 			result |= models.FormatPDF
-		case "html":
+		case formatHTML:
 			result |= models.FormatHTML
-		case "screenshot":
+		case formatScreenshot:
 			result |= models.FormatPNG
 		}
 	}
@@ -42,13 +49,13 @@ func formatsToInt(formats []string) int {
 func intToFormats(flags int) []string {
 	var formats []string
 	if flags&models.FormatPDF != 0 {
-		formats = append(formats, "pdf")
+		formats = append(formats, formatPDF)
 	}
 	if flags&models.FormatHTML != 0 {
-		formats = append(formats, "html")
+		formats = append(formats, formatHTML)
 	}
 	if flags&models.FormatPNG != 0 {
-		formats = append(formats, "screenshot")
+		formats = append(formats, formatScreenshot)
 	}
 	return formats
 }
@@ -223,7 +230,9 @@ func (h *Handler) RetryCapture(c *gin.Context) {
 		"formats": formats,
 	}
 
-	queue.EnqueueJob(h.db, models.JobTypeCapture, payload)
+	if err := queue.EnqueueJob(h.db, models.JobTypeCapture, payload); err != nil {
+		log.Error().Err(err).Str("task_id", task.ID.String()).Msg("Failed to enqueue capture job")
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"id":     task.ID,

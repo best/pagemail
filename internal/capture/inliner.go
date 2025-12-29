@@ -14,6 +14,8 @@ import (
 	"golang.org/x/net/html"
 )
 
+const tagStyle = "style"
+
 type Inliner struct {
 	baseURL    *url.URL
 	httpClient *http.Client
@@ -56,12 +58,12 @@ func (i *Inliner) processNode(n *html.Node) {
 			i.processScript(n)
 		case "img":
 			i.processImage(n)
-		case "style":
+		case tagStyle:
 			i.processStyleTag(n)
 		}
 
 		for j := range n.Attr {
-			if n.Attr[j].Key == "style" {
+			if n.Attr[j].Key == tagStyle {
 				n.Attr[j].Val = i.inlineStyleURLs(n.Attr[j].Val)
 			}
 		}
@@ -192,7 +194,7 @@ func (i *Inliner) toDataURI(resourceURL string) (string, error) {
 	return fmt.Sprintf("data:%s;base64,%s", contentType, encoded), nil
 }
 
-func (i *Inliner) fetchResource(resourceURL string) ([]byte, string, error) {
+func (i *Inliner) fetchResource(resourceURL string) (content []byte, contentType string, err error) {
 	absURL, err := i.resolveURL(resourceURL)
 	if err != nil {
 		return nil, "", err
@@ -208,12 +210,12 @@ func (i *Inliner) fetchResource(resourceURL string) ([]byte, string, error) {
 		return nil, "", fmt.Errorf("resource returned status %d", resp.StatusCode)
 	}
 
-	content, err := io.ReadAll(resp.Body)
+	content, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to read resource: %w", err)
 	}
 
-	contentType := resp.Header.Get("Content-Type")
+	contentType = resp.Header.Get("Content-Type")
 	if contentType == "" {
 		contentType = "application/octet-stream"
 	}

@@ -96,7 +96,8 @@ onMounted(fetchWebhooks)
       <el-button type="primary" :icon="Plus" @click="openDialog()">Add Webhook</el-button>
     </div>
 
-    <el-table :data="webhooks" v-loading="loading">
+    <el-card shadow="hover" class="pm-table-card">
+      <el-table :data="webhooks" v-loading="loading" stripe>
       <el-table-column prop="name" label="Name" />
       <el-table-column prop="url" label="URL" show-overflow-tooltip />
       <el-table-column label="Status" width="100">
@@ -114,6 +115,7 @@ onMounted(fetchWebhooks)
         </template>
       </el-table-column>
     </el-table>
+    </el-card>
 
     <el-dialog v-model="dialogVisible" :title="isEditing ? 'Edit Webhook' : 'New Webhook'">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">

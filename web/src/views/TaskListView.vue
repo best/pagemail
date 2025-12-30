@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { tasksApi } from '@/api/tasks'
 import type { Task } from '@/types/task'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { View, Refresh, Delete, Plus } from '@element-plus/icons-vue'
+import { usePolling } from '@/composables/usePolling'
 
 const router = useRouter()
 const tasks = ref<Task[]>([])
 const total = ref(0)
 const loading = ref(false)
+const lastRefreshed = ref<Date>(new Date())
 
 const query = reactive({
   page: 1,
@@ -18,7 +20,7 @@ const query = reactive({
 })
 
 const fetchTasks = async () => {
-  loading.value = true
+  if (tasks.value.length === 0) loading.value = true
   try {
     const res = await tasksApi.listTasks({
       page: query.page,
@@ -27,10 +29,22 @@ const fetchTasks = async () => {
     })
     tasks.value = res.data.data
     total.value = res.data.meta.total
+    lastRefreshed.value = new Date()
   } finally {
     loading.value = false
   }
 }
+
+const formatTime = (date: Date) => date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+const hasPendingTasks = computed(() => tasks.value.some(t => t.status === 'pending' || t.status === 'processing'))
+
+const { isRunning } = usePolling(fetchTasks, {
+  intervalMs: 10000,
+  pendingIntervalMs: 5000,
+  isPending: () => hasPendingTasks.value,
+  immediate: true
+})
 
 const handlePageChange = (page: number) => {
   query.page = page
@@ -67,7 +81,6 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
   return map[status] || 'info'
 }
 
-onMounted(fetchTasks)
 watch(() => query.status, () => {
   query.page = 1
   fetchTasks()
@@ -77,7 +90,13 @@ watch(() => query.status, () => {
 <template>
   <div class="task-list">
     <div class="header">
-      <h2>Tasks</h2>
+      <div class="title-group">
+        <h2>Tasks</h2>
+        <span v-if="!loading" class="last-updated">
+          <el-icon v-if="isRunning" class="is-loading"><Refresh /></el-icon>
+          {{ formatTime(lastRefreshed) }}
+        </span>
+      </div>
       <div class="filters">
         <el-select v-model="query.status" placeholder="Filter Status" clearable style="width: 150px">
           <el-option label="Pending" value="pending" />
@@ -89,7 +108,8 @@ watch(() => query.status, () => {
       </div>
     </div>
 
-    <el-table :data="tasks" v-loading="loading" style="width: 100%">
+    <el-card shadow="hover" class="pm-table-card">
+      <el-table :data="tasks" v-loading="loading" style="width: 100%" stripe>
       <el-table-column label="URL" min-width="250">
         <template #default="{ row }">
           <div class="url-col">{{ row.url }}</div>
@@ -123,6 +143,7 @@ watch(() => query.status, () => {
         </template>
       </el-table-column>
     </el-table>
+    </el-card>
 
     <div class="pagination">
       <el-pagination
@@ -147,6 +168,24 @@ watch(() => query.status, () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.title-group h2 {
+  margin: 0;
+}
+.last-updated {
+  font-size: 0.75rem;
+  color: var(--pm-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.last-updated .is-loading {
+  animation: pm-spin 1s linear infinite;
 }
 .filters {
   display: flex;

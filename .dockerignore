@@ -1,0 +1,53 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Frontend build artifacts (rebuilt in container)
+web/node_modules
+web/dist
+web/.vite
+web/coverage
+web/tsconfig.tsbuildinfo
+
+# Backend build artifacts (rebuilt in container)
+bin/
+*.exe
+*.test
+
+# Test and coverage
+coverage/
+*.cover
+*.out
+
+# Logs
+*.log
+logs/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# Docker
+docker-compose.override.yaml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation (not needed in image)
+docs/
+*.md
+!deploy/*.md
+
+# Development tools
+Makefile
+.pre-commit-config.yaml
+.golangci.yml
+.air.toml

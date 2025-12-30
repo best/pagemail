@@ -1,0 +1,50 @@
+/* Table Card Container */
+.pm-table-card {
+  border-radius: var(--el-border-radius-base);
+  border: 1px solid var(--pm-border-color);
+  overflow: hidden;
+}
+
+.pm-table-card .el-card__body {
+  padding: 0;
+}
+
+/* Table Header */
+.pm-table-card .el-table__header th {
+  background-color: var(--pm-bg-page);
+  color: var(--pm-text-heading);
+  font-weight: 600;
+  height: 50px;
+}
+
+.pm-table-card .el-table__header th.el-table__cell {
+  background-color: var(--pm-bg-page);
+}
+
+/* Table Rows */
+.pm-table-card .el-table__row td {
+  padding: 12px 0;
+}
+
+.pm-table-card .el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background-color: var(--pm-bg-page);
+}
+
+/* Loading animation for refresh icon */
+@keyframes pm-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pm-last-updated {
+  font-size: 0.75rem;
+  color: var(--pm-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pm-last-updated .is-loading,
+.last-updated .is-loading {
+  animation: pm-spin 1s linear infinite;
+}

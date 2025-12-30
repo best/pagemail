@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { tasksApi } from '@/api/tasks'
 import type { Task } from '@/types/task'
-import { Document, Finished, Warning, Plus } from '@element-plus/icons-vue'
+import { Document, Finished, Warning, Plus, Refresh } from '@element-plus/icons-vue'
+import { usePolling } from '@/composables/usePolling'
 
 const authStore = useAuthStore()
 const tasks = ref<Task[]>([])
 const loading = ref(true)
 const loadError = ref(false)
+const lastRefreshed = ref<Date>(new Date())
 
 const stats = computed(() => {
   const total = tasks.value.length
@@ -32,11 +34,12 @@ const userName = computed(() => {
 const recentTasks = computed(() => tasks.value.slice(0, 5))
 
 const fetchTasks = async () => {
-  loading.value = true
+  if (tasks.value.length === 0) loading.value = true
   loadError.value = false
   try {
     const res = await tasksApi.listTasks({ limit: 100 })
     tasks.value = res.data.data || []
+    lastRefreshed.value = new Date()
   } catch {
     tasks.value = []
     loadError.value = true
@@ -44,6 +47,16 @@ const fetchTasks = async () => {
     loading.value = false
   }
 }
+
+const formatTime = (date: Date) => date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+const hasPendingTasks = computed(() => tasks.value.some(t => t.status === 'pending' || t.status === 'processing'))
+
+const { isRunning } = usePolling(fetchTasks, {
+  intervalMs: 10000,
+  pendingIntervalMs: 5000,
+  isPending: () => hasPendingTasks.value
+})
 
 const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info' => {
   const map: Record<string, 'success' | 'danger' | 'warning' | 'info'> = {
@@ -55,7 +68,6 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
   return map[status] || 'info'
 }
 
-onMounted(fetchTasks)
 </script>
 
 <template>
@@ -110,7 +122,13 @@ onMounted(fetchTasks)
     </el-row>
 
     <div class="section-header anim-up d2">
-      <h2>Recent Activity</h2>
+      <div class="title-group">
+        <h2>Recent Activity</h2>
+        <span v-if="!loading" class="last-updated">
+          <el-icon v-if="isRunning" class="is-loading"><Refresh /></el-icon>
+          {{ formatTime(lastRefreshed) }}
+        </span>
+      </div>
       <el-button text type="primary" @click="$router.push('/tasks')">View All</el-button>
     </div>
 
@@ -304,11 +322,29 @@ html.dark .stat-card.warning .stat-icon {
   margin-bottom: 16px;
 }
 
+.section-header .title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .section-header h2 {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--pm-text-heading);
+}
+
+.last-updated {
+  font-size: 0.75rem;
+  color: var(--pm-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.last-updated .is-loading {
+  animation: pm-spin 1s linear infinite;
 }
 
 .recent-tasks {

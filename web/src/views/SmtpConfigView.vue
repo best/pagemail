@@ -120,7 +120,8 @@ onMounted(fetchProfiles)
       <el-button type="primary" :icon="Plus" @click="openDialog()">Add Profile</el-button>
     </div>
 
-    <el-table :data="profiles" v-loading="loading">
+    <el-card shadow="hover" class="pm-table-card">
+      <el-table :data="profiles" v-loading="loading" stripe>
       <el-table-column prop="name" label="Name" />
       <el-table-column prop="host" label="Host" />
       <el-table-column prop="username" label="Username" />
@@ -137,6 +138,7 @@ onMounted(fetchProfiles)
         </template>
       </el-table-column>
     </el-table>
+    </el-card>
 
     <el-dialog v-model="dialogVisible" :title="isEditing ? 'Edit Profile' : 'New Profile'">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">

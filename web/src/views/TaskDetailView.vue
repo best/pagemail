@@ -1,27 +1,42 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { tasksApi } from '@/api/tasks'
 import type { Task } from '@/types/task'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Download, Refresh, Delete, Back } from '@element-plus/icons-vue'
+import { usePolling } from '@/composables/usePolling'
 
 const route = useRoute()
 const router = useRouter()
 const task = ref<Task | null>(null)
 const loading = ref(true)
+const lastRefreshed = ref<Date>(new Date())
 
 const fetchTask = async () => {
-  loading.value = true
+  const isInitialLoad = !task.value
+  if (isInitialLoad) loading.value = true
   try {
     const res = await tasksApi.getTask(route.params.id as string)
     task.value = res.data
+    lastRefreshed.value = new Date()
   } catch {
-    router.push('/tasks')
+    // Only redirect on initial load failure, not during polling
+    if (isInitialLoad) router.push('/tasks')
   } finally {
     loading.value = false
   }
 }
+
+const formatTime = (date: Date) => date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+const isPendingTask = computed(() => task.value?.status === 'pending' || task.value?.status === 'processing')
+
+const { isRunning, stop: stopPolling } = usePolling(fetchTask, {
+  intervalMs: 10000,
+  pendingIntervalMs: 5000,
+  isPending: () => isPendingTask.value
+})
 
 const handleRetry = async () => {
   if (!task.value) return
@@ -38,6 +53,7 @@ const handleDelete = () => {
   if (!task.value) return
   ElMessageBox.confirm('Delete this task?', 'Warning', { type: 'warning' })
     .then(async () => {
+      stopPolling()
       await tasksApi.deleteTask(task.value!.id)
       ElMessage.success('Task deleted')
       router.push('/tasks')
@@ -63,8 +79,6 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
   }
   return map[status] || 'info'
 }
-
-onMounted(fetchTask)
 </script>
 
 <template>
@@ -72,10 +86,14 @@ onMounted(fetchTask)
     <div class="header">
       <el-button :icon="Back" circle @click="$router.back()" />
       <h2>Task Detail</h2>
+      <span v-if="!loading" class="last-updated">
+        <el-icon v-if="isRunning" class="is-loading"><Refresh /></el-icon>
+        {{ formatTime(lastRefreshed) }}
+      </span>
     </div>
 
     <el-row :gutter="20">
-      <el-col :span="16">
+      <el-col :xs="24" :lg="16">
         <el-card class="mb-4">
           <template #header>
             <div class="card-header">
@@ -105,9 +123,9 @@ onMounted(fetchTask)
           </div>
         </el-card>
 
-        <el-card v-if="task.outputs && task.outputs.length > 0">
+        <el-card v-if="task.outputs && task.outputs.length > 0" class="pm-table-card">
           <template #header><span>Generated Outputs</span></template>
-          <el-table :data="task.outputs">
+          <el-table :data="task.outputs" stripe style="width: 100%">
             <el-table-column prop="format" label="Format" width="100">
               <template #default="{ row }">{{ row.format.toUpperCase() }}</template>
             </el-table-column>
@@ -125,7 +143,7 @@ onMounted(fetchTask)
         </el-card>
       </el-col>
 
-      <el-col :span="8">
+      <el-col :xs="24" :lg="8">
         <el-card>
           <template #header><span>Delivery History</span></template>
           <el-timeline v-if="task.delivery_history && task.delivery_history.length">
@@ -157,6 +175,20 @@ onMounted(fetchTask)
   align-items: center;
   gap: 16px;
   margin-bottom: 20px;
+}
+.header h2 {
+  margin: 0;
+  flex: 1;
+}
+.last-updated {
+  font-size: 0.75rem;
+  color: var(--pm-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.last-updated .is-loading {
+  animation: pm-spin 1s linear infinite;
 }
 .card-header {
   display: flex;

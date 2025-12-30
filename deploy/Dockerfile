@@ -57,8 +57,10 @@ RUN apk add --no-cache \
     nss \
     freetype \
     harfbuzz \
-    ttf-freefont \
-    && rm -rf /var/cache/apk/*
+    fontconfig \
+    font-noto \
+    font-noto-cjk \
+    font-noto-emoji
 
 # Create non-root user
 RUN addgroup -g 1000 pagemail && \

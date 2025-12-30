@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { tasksApi } from '@/api/tasks'
 import { smtpApi } from '@/api/smtp'
 import { webhooksApi } from '@/api/webhooks'
@@ -9,6 +10,7 @@ import type { SmtpProfile, WebhookConfig } from '@/types/settings'
 import type { TaskCreatePayload } from '@/types/task'
 import type { FormInstance, FormRules } from 'element-plus'
 
+const { t } = useI18n()
 const router = useRouter()
 const loading = ref(false)
 const smtpProfiles = ref<SmtpProfile[]>([])
@@ -23,15 +25,15 @@ const form = reactive({
   delivery_config_id: ''
 })
 
-const rules: FormRules = {
+const rules = computed<FormRules>(() => ({
   url: [
-    { required: true, message: 'URL is required', trigger: 'blur' },
-    { pattern: /^https?:\/\/.+/, message: 'Please enter a valid URL', trigger: 'blur' }
+    { required: true, message: t('validation.urlRequired'), trigger: 'blur' },
+    { pattern: /^https?:\/\/.+/, message: t('validation.urlInvalid'), trigger: 'blur' }
   ],
   formats: [
-    { type: 'array', required: true, message: 'Please select at least one format', trigger: 'change' }
+    { type: 'array', required: true, message: t('validation.formatRequired'), trigger: 'change' }
   ]
-}
+}))
 
 const fetchConfigs = async () => {
   try {
@@ -69,7 +71,7 @@ const handleSubmit = async () => {
       }
 
       const res = await tasksApi.createTask(payload)
-      ElMessage.success('Task created successfully')
+      ElMessage.success(t('tasks.createSuccess'))
       router.push({ name: 'task-detail', params: { id: res.data.id } })
     } catch {
       // handled globally
@@ -83,45 +85,45 @@ const handleSubmit = async () => {
 <template>
   <div class="create-task">
     <div class="header">
-      <h2>New Capture Task</h2>
+      <h2>{{ t('taskCreate.title') }}</h2>
     </div>
 
     <el-card>
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
-        <el-form-item label="Target URL" prop="url">
-          <el-input v-model="form.url" placeholder="https://example.com" />
+        <el-form-item :label="t('taskCreate.targetUrl')" prop="url">
+          <el-input v-model="form.url" :placeholder="t('taskCreate.urlPlaceholder')" />
         </el-form-item>
 
-        <el-form-item label="Output Formats" prop="formats">
+        <el-form-item :label="t('taskCreate.outputFormats')" prop="formats">
           <el-checkbox-group v-model="form.formats">
-            <el-checkbox value="pdf">PDF</el-checkbox>
-            <el-checkbox value="html">HTML</el-checkbox>
-            <el-checkbox value="screenshot">Screenshot (PNG)</el-checkbox>
+            <el-checkbox value="pdf">{{ t('taskCreate.pdf') }}</el-checkbox>
+            <el-checkbox value="html">{{ t('taskCreate.html') }}</el-checkbox>
+            <el-checkbox value="screenshot">{{ t('taskCreate.screenshot') }}</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
 
-        <el-form-item label="Cookies (Optional)">
+        <el-form-item :label="t('taskCreate.cookies')">
           <el-input
             v-model="form.cookies"
             type="textarea"
             :rows="3"
-            placeholder="name=value; name2=value2"
+            :placeholder="t('taskCreate.cookiesPlaceholder')"
           />
-          <span class="hint">Format: name=value; name2=value2</span>
+          <span class="hint">{{ t('taskCreate.cookiesHint') }}</span>
         </el-form-item>
 
-        <el-divider>Delivery Options</el-divider>
+        <el-divider>{{ t('taskCreate.deliveryOptions') }}</el-divider>
 
-        <el-form-item label="Delivery Method">
+        <el-form-item :label="t('taskCreate.deliveryMethod')">
           <el-radio-group v-model="form.delivery_type">
-            <el-radio value="none">None (Download only)</el-radio>
-            <el-radio value="email">Email</el-radio>
-            <el-radio value="webhook">Webhook</el-radio>
+            <el-radio value="none">{{ t('taskCreate.none') }}</el-radio>
+            <el-radio value="email">{{ t('taskCreate.emailDelivery') }}</el-radio>
+            <el-radio value="webhook">{{ t('taskCreate.webhookDelivery') }}</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item v-if="form.delivery_type === 'email'" label="Select SMTP Profile">
-          <el-select v-model="form.delivery_config_id" placeholder="Select SMTP Profile">
+        <el-form-item v-if="form.delivery_type === 'email'" :label="t('taskCreate.selectSmtp')">
+          <el-select v-model="form.delivery_config_id" :placeholder="t('taskCreate.selectSmtp')">
             <el-option
               v-for="profile in smtpProfiles"
               :key="profile.id"
@@ -131,8 +133,8 @@ const handleSubmit = async () => {
           </el-select>
         </el-form-item>
 
-        <el-form-item v-if="form.delivery_type === 'webhook'" label="Select Webhook">
-          <el-select v-model="form.delivery_config_id" placeholder="Select Webhook">
+        <el-form-item v-if="form.delivery_type === 'webhook'" :label="t('taskCreate.selectWebhook')">
+          <el-select v-model="form.delivery_config_id" :placeholder="t('taskCreate.selectWebhook')">
             <el-option
               v-for="hook in webhooks"
               :key="hook.id"
@@ -143,8 +145,8 @@ const handleSubmit = async () => {
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="handleSubmit" :loading="loading">Create Task</el-button>
-          <el-button @click="router.back()">Cancel</el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="loading">{{ t('taskCreate.createTask') }}</el-button>
+          <el-button @click="router.back()">{{ t('common.cancel') }}</el-button>
         </el-form-item>
       </el-form>
     </el-card>

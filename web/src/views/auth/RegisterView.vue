@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
 import type { FormRules } from 'element-plus'
 
+const { t } = useI18n()
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -15,21 +17,21 @@ const form = reactive({
   confirmPassword: ''
 })
 
-const rules: FormRules = {
+const rules = computed<FormRules>(() => ({
   email: [
-    { required: true, message: 'Please enter email', trigger: 'blur' },
-    { type: 'email', message: 'Please enter valid email', trigger: 'blur' }
+    { required: true, message: t('validation.emailRequired'), trigger: 'blur' },
+    { type: 'email', message: t('validation.emailInvalid'), trigger: 'blur' }
   ],
   password: [
-    { required: true, message: 'Please enter password', trigger: 'blur' },
-    { min: 8, message: 'Password must be at least 8 characters', trigger: 'blur' }
+    { required: true, message: t('validation.passwordRequired'), trigger: 'blur' },
+    { min: 8, message: t('validation.passwordMin'), trigger: 'blur' }
   ],
   confirmPassword: [
-    { required: true, message: 'Please confirm password', trigger: 'blur' },
+    { required: true, message: t('validation.confirmRequired'), trigger: 'blur' },
     {
       validator: (_: unknown, value: string, callback: (error?: Error) => void) => {
         if (value !== form.password) {
-          callback(new Error('Passwords do not match'))
+          callback(new Error(t('validation.passwordMismatch')))
         } else {
           callback()
         }
@@ -37,15 +39,15 @@ const rules: FormRules = {
       trigger: 'blur'
     }
   ]
-}
+}))
 
 async function handleSubmit() {
   loading.value = true
   try {
     await authStore.register(form.email, form.password)
-    ElMessage.success('Registration successful! Please login.')
+    ElMessage.success(t('auth.registerSuccess'))
     router.push('/login')
-  } catch (error) {
+  } catch {
     // Error handled by interceptor
   } finally {
     loading.value = false
@@ -56,35 +58,35 @@ async function handleSubmit() {
 <template>
   <div class="auth-view">
     <div class="auth-header">
-      <h2>Create account</h2>
-      <p>Get started with Pagemail</p>
+      <h2>{{ t('auth.createAccount') }}</h2>
+      <p>{{ t('auth.getStartedWith') }}</p>
     </div>
 
     <el-form :model="form" :rules="rules" label-position="top" @submit.prevent="handleSubmit">
-      <el-form-item label="Email" prop="email">
+      <el-form-item :label="t('auth.email')" prop="email">
         <el-input
           v-model="form.email"
           type="email"
-          placeholder="Enter your email"
+          :placeholder="t('auth.email')"
           size="large"
         />
       </el-form-item>
 
-      <el-form-item label="Password" prop="password">
+      <el-form-item :label="t('auth.password')" prop="password">
         <el-input
           v-model="form.password"
           type="password"
-          placeholder="Enter your password"
+          :placeholder="t('auth.password')"
           show-password
           size="large"
         />
       </el-form-item>
 
-      <el-form-item label="Confirm Password" prop="confirmPassword">
+      <el-form-item :label="t('auth.confirmPassword')" prop="confirmPassword">
         <el-input
           v-model="form.confirmPassword"
           type="password"
-          placeholder="Confirm your password"
+          :placeholder="t('auth.confirmPassword')"
           show-password
           size="large"
         />
@@ -98,13 +100,13 @@ async function handleSubmit() {
           size="large"
           class="submit-btn"
         >
-          Create account
+          {{ t('auth.createAccountBtn') }}
         </el-button>
       </el-form-item>
 
       <div class="auth-footer">
-        Already have an account?
-        <router-link to="/login">Sign in</router-link>
+        {{ t('auth.haveAccount') }}
+        <router-link to="/login">{{ t('auth.signInLink') }}</router-link>
       </div>
     </el-form>
   </div>

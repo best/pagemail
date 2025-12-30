@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { adminApi } from '@/api/admin'
 import { ElMessage } from 'element-plus'
+
+const { t } = useI18n()
 
 interface SystemConfig {
   storage_type: string
@@ -37,7 +40,7 @@ const saveConfig = async () => {
   saving.value = true
   try {
     await adminApi.updateSystemConfig(config.value)
-    ElMessage.success('Configuration saved')
+    ElMessage.success(t('admin.systemConfig.configSaved'))
   } catch {
     // handled globally
   } finally {
@@ -50,33 +53,33 @@ onMounted(fetchConfig)
 
 <template>
   <div class="system-config" v-loading="loading">
-    <h2>System Configuration</h2>
+    <h2>{{ t('admin.systemConfig.title') }}</h2>
 
     <el-card>
       <el-form :model="config" label-position="top" style="max-width: 600px">
-        <el-form-item label="Storage Type">
+        <el-form-item :label="t('admin.systemConfig.storageType')">
           <el-radio-group v-model="config.storage_type">
-            <el-radio value="local">Local Filesystem</el-radio>
-            <el-radio value="s3">S3 / MinIO</el-radio>
+            <el-radio value="local">{{ t('admin.systemConfig.local') }}</el-radio>
+            <el-radio value="s3">{{ t('admin.systemConfig.s3') }}</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item v-if="config.storage_type === 'local'" label="Storage Path">
+        <el-form-item v-if="config.storage_type === 'local'" :label="t('admin.systemConfig.storagePath')">
           <el-input v-model="config.storage_path" />
         </el-form-item>
 
         <template v-if="config.storage_type === 's3'">
-          <el-form-item label="S3 Bucket">
+          <el-form-item :label="t('admin.systemConfig.s3Bucket')">
             <el-input v-model="config.s3_bucket" />
           </el-form-item>
-          <el-form-item label="S3 Region">
+          <el-form-item :label="t('admin.systemConfig.s3Region')">
             <el-input v-model="config.s3_region" />
           </el-form-item>
         </template>
 
         <el-divider />
 
-        <el-form-item label="Default Output Formats">
+        <el-form-item :label="t('admin.systemConfig.defaultFormats')">
           <el-checkbox-group v-model="config.default_formats">
             <el-checkbox value="pdf">PDF</el-checkbox>
             <el-checkbox value="html">HTML</el-checkbox>
@@ -84,12 +87,12 @@ onMounted(fetchConfig)
           </el-checkbox-group>
         </el-form-item>
 
-        <el-form-item label="Max Concurrent Captures">
+        <el-form-item :label="t('admin.systemConfig.maxConcurrent')">
           <el-input-number v-model="config.max_concurrent_captures" :min="1" :max="20" />
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="saveConfig" :loading="saving">Save Configuration</el-button>
+          <el-button type="primary" @click="saveConfig" :loading="saving">{{ t('admin.systemConfig.saveConfig') }}</el-button>
         </el-form-item>
       </el-form>
     </el-card>

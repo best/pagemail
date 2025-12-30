@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { adminApi, type AuditLog } from '@/api/admin'
+
+const { t } = useI18n()
 
 const logs = ref<AuditLog[]>([])
 const loading = ref(false)
@@ -23,16 +26,16 @@ onMounted(fetchLogs)
 
 <template>
   <div class="audit-log">
-    <h2>Audit Logs</h2>
+    <h2>{{ t('admin.auditLogs.title') }}</h2>
     <el-table :data="logs" v-loading="loading" style="width: 100%">
-      <el-table-column prop="created_at" label="Time" width="180">
+      <el-table-column prop="created_at" :label="t('admin.auditLogs.time')" width="180">
         <template #default="{ row }">{{ new Date(row.created_at).toLocaleString() }}</template>
       </el-table-column>
-      <el-table-column prop="actor_email" label="User" width="200" />
-      <el-table-column prop="action" label="Action" width="150" />
-      <el-table-column prop="resource_type" label="Resource" width="120" />
-      <el-table-column prop="ip_address" label="IP" width="140" />
-      <el-table-column label="Details">
+      <el-table-column prop="actor_email" :label="t('admin.auditLogs.user')" width="200" />
+      <el-table-column prop="action" :label="t('admin.auditLogs.action')" width="150" />
+      <el-table-column prop="resource_type" :label="t('admin.auditLogs.resource')" width="120" />
+      <el-table-column prop="ip_address" :label="t('admin.auditLogs.ip')" width="140" />
+      <el-table-column :label="t('admin.auditLogs.details')">
         <template #default="{ row }">
           <pre class="details-json">{{ JSON.stringify(row.details, null, 2) }}</pre>
         </template>

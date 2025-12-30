@@ -1,11 +1,17 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useDark, useToggle } from '@vueuse/core'
+import i18n, { detectBrowserLanguage, type Locale } from '@/i18n'
 
 export const useUiStore = defineStore('ui', () => {
   const sidebarCollapsed = ref(false)
+  const language = ref<Locale>(detectBrowserLanguage())
   const isDark = useDark()
   const toggleDark = useToggle(isDark)
+
+  watch(language, (newLang) => {
+    i18n.global.locale.value = newLang
+  }, { immediate: true })
 
   function toggleSidebar() {
     sidebarCollapsed.value = !sidebarCollapsed.value
@@ -15,19 +21,25 @@ export const useUiStore = defineStore('ui', () => {
     toggleDark()
   }
 
+  function setLanguage(lang: Locale) {
+    language.value = lang
+  }
+
   function initTheme() {
     // useDark handles initialization automatically
   }
 
   return {
     sidebarCollapsed,
+    language,
     isDark,
     toggleSidebar,
     toggleTheme,
+    setLanguage,
     initTheme
   }
 }, {
   persist: {
-    paths: ['sidebarCollapsed']
+    paths: ['sidebarCollapsed', 'language']
   }
 })

@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
 import apiClient from '@/api/client'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const passwordForm = ref({
   current_password: '',
@@ -14,7 +16,7 @@ const loading = ref(false)
 
 const updatePassword = async () => {
   if (passwordForm.value.new_password !== passwordForm.value.confirm_password) {
-    ElMessage.error('New passwords do not match')
+    ElMessage.error(t('settings.passwordMismatch'))
     return
   }
 
@@ -24,7 +26,7 @@ const updatePassword = async () => {
       current_password: passwordForm.value.current_password,
       new_password: passwordForm.value.new_password
     })
-    ElMessage.success('Password updated successfully')
+    ElMessage.success(t('settings.passwordUpdated'))
     passwordForm.value = { current_password: '', new_password: '', confirm_password: '' }
   } catch {
     // handled globally
@@ -37,55 +39,55 @@ const updatePassword = async () => {
 <template>
   <div class="settings-view">
     <div class="header">
-      <h2>Settings</h2>
+      <h2>{{ t('settings.title') }}</h2>
     </div>
 
     <el-tabs type="border-card">
-      <el-tab-pane label="Profile">
+      <el-tab-pane :label="t('settings.profile')">
         <el-form label-position="top" style="max-width: 400px">
-          <el-form-item label="Email">
+          <el-form-item :label="t('auth.email')">
             <el-input :model-value="authStore.user?.email" disabled />
           </el-form-item>
         </el-form>
 
         <el-divider />
 
-        <h3>Change Password</h3>
+        <h3>{{ t('settings.changePassword') }}</h3>
         <el-form
           :model="passwordForm"
           label-position="top"
           style="max-width: 400px"
           @submit.prevent="updatePassword"
         >
-          <el-form-item label="Current Password">
+          <el-form-item :label="t('settings.currentPassword')">
             <el-input v-model="passwordForm.current_password" type="password" show-password />
           </el-form-item>
-          <el-form-item label="New Password">
+          <el-form-item :label="t('settings.newPassword')">
             <el-input v-model="passwordForm.new_password" type="password" show-password />
           </el-form-item>
-          <el-form-item label="Confirm New Password">
+          <el-form-item :label="t('settings.confirmNewPassword')">
             <el-input v-model="passwordForm.confirm_password" type="password" show-password />
           </el-form-item>
           <el-button type="primary" native-type="submit" :loading="loading">
-            Update Password
+            {{ t('settings.updatePassword') }}
           </el-button>
         </el-form>
       </el-tab-pane>
 
-      <el-tab-pane label="SMTP Configuration">
+      <el-tab-pane :label="t('settings.smtpConfig')">
         <div class="config-link">
-          <p>Manage your SMTP profiles for email delivery.</p>
+          <p>{{ t('settings.smtpDesc') }}</p>
           <el-button type="primary" @click="$router.push('/settings/smtp')">
-            Go to SMTP Settings
+            {{ t('settings.goToSmtp') }}
           </el-button>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="Webhooks">
+      <el-tab-pane :label="t('settings.webhooks')">
         <div class="config-link">
-          <p>Manage webhooks for notifications.</p>
+          <p>{{ t('settings.webhooksDesc') }}</p>
           <el-button type="primary" @click="$router.push('/settings/webhooks')">
-            Go to Webhook Settings
+            {{ t('settings.goToWebhooks') }}
           </el-button>
         </div>
       </el-tab-pane>

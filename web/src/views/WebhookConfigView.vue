@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { webhooksApi } from '@/api/webhooks'
 import type { WebhookConfig } from '@/types/settings'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete, Edit } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
+
+const { t } = useI18n()
 
 const webhooks = ref<WebhookConfig[]>([])
 const loading = ref(false)
@@ -19,13 +22,13 @@ const form = ref<Partial<WebhookConfig>>({
   is_active: true
 })
 
-const rules: FormRules = {
-  name: [{ required: true, message: 'Name is required', trigger: 'blur' }],
+const rules = computed<FormRules>(() => ({
+  name: [{ required: true, message: t('webhook.nameRequired'), trigger: 'blur' }],
   url: [
-    { required: true, message: 'URL is required', trigger: 'blur' },
-    { pattern: /^https?:\/\/.+/, message: 'Must be a valid URL', trigger: 'blur' }
+    { required: true, message: t('webhook.urlRequired'), trigger: 'blur' },
+    { pattern: /^https?:\/\/.+/, message: t('webhook.urlInvalid'), trigger: 'blur' }
   ]
-}
+}))
 
 const fetchWebhooks = async () => {
   loading.value = true
@@ -58,7 +61,7 @@ const handleSubmit = async () => {
       } else {
         await webhooksApi.createWebhook(form.value)
       }
-      ElMessage.success(isEditing.value ? 'Webhook updated' : 'Webhook created')
+      ElMessage.success(isEditing.value ? t('webhook.webhookUpdated') : t('webhook.webhookCreated'))
       dialogVisible.value = false
       fetchWebhooks()
     } catch {
@@ -68,10 +71,10 @@ const handleSubmit = async () => {
 }
 
 const handleDelete = (id: string) => {
-  ElMessageBox.confirm('Delete this webhook?', 'Warning', { type: 'warning' })
+  ElMessageBox.confirm(t('webhook.deleteConfirm'), 'Warning', { type: 'warning' })
     .then(async () => {
       await webhooksApi.deleteWebhook(id)
-      ElMessage.success('Deleted')
+      ElMessage.success(t('webhook.webhookDeleted'))
       fetchWebhooks()
     })
     .catch(() => {})
@@ -80,7 +83,7 @@ const handleDelete = (id: string) => {
 const handleTest = async (id: string) => {
   try {
     await webhooksApi.testWebhook(id)
-    ElMessage.success('Test event sent')
+    ElMessage.success(t('webhook.testSuccess'))
   } catch {
     // handled globally
   }
@@ -92,24 +95,24 @@ onMounted(fetchWebhooks)
 <template>
   <div class="webhook-view">
     <div class="header">
-      <h2>Webhooks</h2>
-      <el-button type="primary" :icon="Plus" @click="openDialog()">Add Webhook</el-button>
+      <h2>{{ t('webhook.title') }}</h2>
+      <el-button type="primary" :icon="Plus" @click="openDialog()">{{ t('webhook.addWebhook') }}</el-button>
     </div>
 
     <el-card shadow="hover" class="pm-table-card">
       <el-table :data="webhooks" v-loading="loading" stripe>
-      <el-table-column prop="name" label="Name" />
-      <el-table-column prop="url" label="URL" show-overflow-tooltip />
-      <el-table-column label="Status" width="100">
+      <el-table-column prop="name" :label="t('webhook.name')" />
+      <el-table-column prop="url" :label="t('webhook.url')" show-overflow-tooltip />
+      <el-table-column :label="t('webhook.status')" width="100">
         <template #default="{ row }">
           <el-tag :type="row.is_active ? 'success' : 'info'">
-            {{ row.is_active ? 'Active' : 'Inactive' }}
+            {{ row.is_active ? t('webhook.active') : t('webhook.inactive') }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Actions" align="right" width="250">
+      <el-table-column :label="t('webhook.actions')" align="right" width="250">
         <template #default="{ row }">
-          <el-button size="small" @click="handleTest(row.id)">Test</el-button>
+          <el-button size="small" @click="handleTest(row.id)">{{ t('webhook.test') }}</el-button>
           <el-button size="small" :icon="Edit" @click="openDialog(row)" />
           <el-button size="small" type="danger" :icon="Delete" @click="handleDelete(row.id)" />
         </template>
@@ -117,24 +120,24 @@ onMounted(fetchWebhooks)
     </el-table>
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="isEditing ? 'Edit Webhook' : 'New Webhook'">
+    <el-dialog v-model="dialogVisible" :title="isEditing ? t('webhook.editWebhook') : t('webhook.newWebhook')">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="Name" prop="name">
+        <el-form-item :label="t('webhook.name')" prop="name">
           <el-input v-model="form.name" />
         </el-form-item>
-        <el-form-item label="Payload URL" prop="url">
+        <el-form-item :label="t('webhook.payloadUrl')" prop="url">
           <el-input v-model="form.url" placeholder="https://..." />
         </el-form-item>
-        <el-form-item label="Secret" prop="secret">
+        <el-form-item :label="t('webhook.secret')" prop="secret">
           <el-input v-model="form.secret" type="password" show-password />
         </el-form-item>
-        <el-form-item label="Active" prop="is_active">
+        <el-form-item :label="t('webhook.isActive')" prop="is_active">
           <el-switch v-model="form.is_active" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="handleSubmit">Save</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>

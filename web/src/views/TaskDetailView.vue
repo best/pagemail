@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { tasksApi } from '@/api/tasks'
 import type { Task } from '@/types/task'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Download, Refresh, Delete, Back } from '@element-plus/icons-vue'
 import { usePolling } from '@/composables/usePolling'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const task = ref<Task | null>(null)
@@ -42,7 +44,7 @@ const handleRetry = async () => {
   if (!task.value) return
   try {
     await tasksApi.retryTask(task.value.id)
-    ElMessage.success('Retry initiated')
+    ElMessage.success(t('taskDetail.retryInitiated'))
     fetchTask()
   } catch {
     // handled globally
@@ -51,11 +53,11 @@ const handleRetry = async () => {
 
 const handleDelete = () => {
   if (!task.value) return
-  ElMessageBox.confirm('Delete this task?', 'Warning', { type: 'warning' })
+  ElMessageBox.confirm(t('taskDetail.deleteTask'), 'Warning', { type: 'warning' })
     .then(async () => {
       stopPolling()
       await tasksApi.deleteTask(task.value!.id)
-      ElMessage.success('Task deleted')
+      ElMessage.success(t('tasks.deleteSuccess'))
       router.push('/tasks')
     })
     .catch(() => {})
@@ -66,7 +68,7 @@ const handleDownload = async (outputId: string, format: string) => {
   try {
     await tasksApi.downloadOutput(task.value.id, outputId, format)
   } catch {
-    ElMessage.error('Download failed')
+    ElMessage.error(t('taskDetail.downloadFailed'))
   }
 }
 
@@ -85,7 +87,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
   <div class="task-detail" v-if="task">
     <div class="header">
       <el-button :icon="Back" circle @click="$router.back()" />
-      <h2>Task Detail</h2>
+      <h2>{{ t('taskDetail.title') }}</h2>
       <span v-if="!loading" class="last-updated">
         <el-icon v-if="isRunning" class="is-loading"><Refresh /></el-icon>
         {{ formatTime(lastRefreshed) }}
@@ -97,45 +99,45 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
         <el-card class="mb-4">
           <template #header>
             <div class="card-header">
-              <span>Task Information</span>
+              <span>{{ t('taskDetail.taskInfo') }}</span>
               <el-tag :type="getStatusType(task.status)">{{ task.status.toUpperCase() }}</el-tag>
             </div>
           </template>
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="ID">{{ task.id }}</el-descriptions-item>
-            <el-descriptions-item label="URL">
+            <el-descriptions-item :label="t('taskDetail.id')">{{ task.id }}</el-descriptions-item>
+            <el-descriptions-item :label="t('tasks.url')">
               <a :href="task.url" target="_blank">{{ task.url }}</a>
             </el-descriptions-item>
-            <el-descriptions-item label="Created">
+            <el-descriptions-item :label="t('tasks.created')">
               {{ new Date(task.created_at).toLocaleString() }}
             </el-descriptions-item>
-            <el-descriptions-item label="Formats">{{ task.formats.join(', ') }}</el-descriptions-item>
-            <el-descriptions-item v-if="task.error_message" label="Error">
+            <el-descriptions-item :label="t('tasks.formats')">{{ task.formats.join(', ') }}</el-descriptions-item>
+            <el-descriptions-item v-if="task.error_message" :label="t('taskDetail.error')">
               <span class="text-danger">{{ task.error_message }}</span>
             </el-descriptions-item>
           </el-descriptions>
 
           <div class="actions mt-4">
             <el-button v-if="task.status === 'failed'" type="warning" :icon="Refresh" @click="handleRetry">
-              Retry
+              {{ t('common.retry') }}
             </el-button>
-            <el-button type="danger" :icon="Delete" @click="handleDelete">Delete</el-button>
+            <el-button type="danger" :icon="Delete" @click="handleDelete">{{ t('common.delete') }}</el-button>
           </div>
         </el-card>
 
         <el-card v-if="task.outputs && task.outputs.length > 0" class="pm-table-card">
-          <template #header><span>Generated Outputs</span></template>
+          <template #header><span>{{ t('taskDetail.generatedOutputs') }}</span></template>
           <el-table :data="task.outputs" stripe style="width: 100%">
-            <el-table-column prop="format" label="Format" width="100">
+            <el-table-column prop="format" :label="t('taskDetail.format')" width="100">
               <template #default="{ row }">{{ row.format.toUpperCase() }}</template>
             </el-table-column>
-            <el-table-column prop="size" label="Size">
+            <el-table-column prop="size" :label="t('taskDetail.size')">
               <template #default="{ row }">{{ (row.size / 1024).toFixed(1) }} KB</template>
             </el-table-column>
             <el-table-column align="right">
               <template #default="{ row }">
                 <el-button size="small" :icon="Download" @click="handleDownload(row.id, row.format)">
-                  Download
+                  {{ t('common.download') }}
                 </el-button>
               </template>
             </el-table-column>
@@ -145,7 +147,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
 
       <el-col :xs="24" :lg="8">
         <el-card>
-          <template #header><span>Delivery History</span></template>
+          <template #header><span>{{ t('taskDetail.deliveryHistory') }}</span></template>
           <el-timeline v-if="task.delivery_history && task.delivery_history.length">
             <el-timeline-item
               v-for="(item, index) in task.delivery_history"
@@ -158,7 +160,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
               <p v-if="item.error" class="text-danger">{{ item.error }}</p>
             </el-timeline-item>
           </el-timeline>
-          <el-empty v-else description="No delivery attempts" />
+          <el-empty v-else :description="t('taskDetail.noDelivery')" />
         </el-card>
       </el-col>
     </el-row>

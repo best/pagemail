@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterView, useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useUiStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
+import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
 import {
   House,
   Document,
@@ -16,6 +18,7 @@ import {
   Expand
 } from '@element-plus/icons-vue'
 
+const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const uiStore = useUiStore()
@@ -23,16 +26,16 @@ const authStore = useAuthStore()
 
 const menuItems = computed(() => {
   const items = [
-    { index: '/dashboard', title: 'Dashboard', icon: House },
-    { index: '/tasks', title: 'Tasks', icon: Document },
-    { index: '/settings', title: 'Settings', icon: Setting }
+    { index: '/dashboard', titleKey: 'nav.dashboard', icon: House },
+    { index: '/tasks', titleKey: 'nav.tasks', icon: Document },
+    { index: '/settings', titleKey: 'nav.settings', icon: Setting }
   ]
 
   if (authStore.isAdmin) {
     items.push(
-      { index: '/admin/users', title: 'Users', icon: User },
-      { index: '/admin/system', title: 'System', icon: DataAnalysis },
-      { index: '/admin/audit', title: 'Audit Logs', icon: Memo }
+      { index: '/admin/users', titleKey: 'nav.users', icon: User },
+      { index: '/admin/system', titleKey: 'nav.system', icon: DataAnalysis },
+      { index: '/admin/audit', titleKey: 'nav.auditLogs', icon: Memo }
     )
   }
 
@@ -71,7 +74,7 @@ function handleLogout() {
       >
         <el-menu-item v-for="item in menuItems" :key="item.index" :index="item.index">
           <el-icon><component :is="item.icon" /></el-icon>
-          <template #title>{{ item.title }}</template>
+          <template #title>{{ t(item.titleKey) }}</template>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -82,6 +85,7 @@ function handleLogout() {
           <el-button :icon="uiStore.sidebarCollapsed ? Expand : Fold" text @click="uiStore.toggleSidebar" aria-label="Toggle Sidebar" />
         </div>
         <div class="header-right">
+          <LanguageSwitcher />
           <el-button :icon="uiStore.isDark ? Sunny : Moon" text @click="uiStore.toggleTheme" aria-label="Toggle Theme" />
           <el-dropdown trigger="click">
             <el-button text>
@@ -90,7 +94,7 @@ function handleLogout() {
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item disabled>{{ authStore.user?.email }}</el-dropdown-item>
-                <el-dropdown-item divided @click="handleLogout">Logout</el-dropdown-item>
+                <el-dropdown-item divided @click="handleLogout">{{ t('common.logout') }}</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>

@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { useUiStore } from '@/stores/ui'
+import { Moon, Sunny } from '@element-plus/icons-vue'
+import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
+
+const { t } = useI18n()
+const uiStore = useUiStore()
 </script>
 
 <template>
@@ -7,13 +14,17 @@ import { RouterView } from 'vue-router'
     <div class="brand-side">
       <div class="brand-content">
         <h1 class="brand-logo">Pagemail</h1>
-        <p class="brand-tagline">Capture the web,<br>deliver with ease.</p>
+        <p class="brand-tagline" v-html="t('auth.brandTagline').replace('\n', '<br>')"></p>
       </div>
       <div class="shape shape-1"></div>
       <div class="shape shape-2"></div>
       <div class="shape shape-3"></div>
     </div>
     <div class="form-side">
+      <div class="top-actions">
+        <LanguageSwitcher />
+        <el-button :icon="uiStore.isDark ? Sunny : Moon" text circle aria-label="Toggle Theme" @click="uiStore.toggleTheme" />
+      </div>
       <div class="form-container">
         <RouterView v-slot="{ Component }">
           <Transition name="fade-slide" appear>
@@ -102,6 +113,16 @@ import { RouterView } from 'vue-router'
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  position: relative;
+}
+
+.top-actions {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .form-container {

@@ -1,23 +1,26 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useUiStore } from '@/stores/ui'
+import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
 import { Monitor, Message, Timer, ArrowRight, Moon, Sunny } from '@element-plus/icons-vue'
 
+const { t } = useI18n()
 const router = useRouter()
 const uiStore = useUiStore()
 
-const features = [
-  { icon: Monitor, title: 'Pixel-Perfect Capture', desc: 'Full-page screenshots with high fidelity rendering engine.' },
-  { icon: Timer, title: 'Scheduled Delivery', desc: 'Recurring captures sent directly to your inbox.' },
-  { icon: Message, title: 'Email Integration', desc: 'Seamless SMTP or Webhook delivery support.' }
-]
+const features = computed(() => [
+  { icon: Monitor, titleKey: 'landing.feature1Title', descKey: 'landing.feature1Desc' },
+  { icon: Timer, titleKey: 'landing.feature2Title', descKey: 'landing.feature2Desc' },
+  { icon: Message, titleKey: 'landing.feature3Title', descKey: 'landing.feature3Desc' }
+])
 
-const steps = [
-  { num: '01', title: 'Configure Source', desc: 'Enter URL and customize capture settings.' },
-  { num: '02', title: 'Set Schedule', desc: 'Choose delivery frequency.' },
-  { num: '03', title: 'Receive Updates', desc: 'Get snapshots automatically.' }
-]
+const steps = computed(() => [
+  { num: '01', titleKey: 'landing.step1Title', descKey: 'landing.step1Desc' },
+  { num: '02', titleKey: 'landing.step2Title', descKey: 'landing.step2Desc' },
+  { num: '03', titleKey: 'landing.step3Title', descKey: 'landing.step3Desc' }
+])
 
 const isScrolled = ref(false)
 const handleScroll = () => { isScrolled.value = window.scrollY > 50 }
@@ -32,9 +35,10 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
       <div class="container nav-inner">
         <div class="logo">Pagemail</div>
         <div class="nav-actions">
+          <LanguageSwitcher />
           <el-button :icon="uiStore.isDark ? Sunny : Moon" text circle aria-label="Toggle theme" @click="uiStore.toggleTheme" />
-          <router-link to="/login" class="nav-link">Sign In</router-link>
-          <el-button type="primary" round @click="router.push('/register')">Get Started</el-button>
+          <router-link to="/login" class="nav-link">{{ t('landing.signIn') }}</router-link>
+          <el-button type="primary" round @click="router.push('/register')">{{ t('landing.getStarted') }}</el-button>
         </div>
       </div>
     </nav>
@@ -48,13 +52,13 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
       </div>
       <div class="container hero-content">
         <div class="hero-text">
-          <h1 class="anim-up">Capture the Web,<br><span class="gradient-text">Deliver with Ease</span></h1>
-          <p class="subtitle anim-up d1">Automated webpage screenshots delivered straight to your email or webhook. Monitor competitors, archive content, track visual changes.</p>
+          <h1 class="anim-up">{{ t('landing.heroTitle') }}<br><span class="gradient-text">{{ t('landing.heroHighlight') }}</span></h1>
+          <p class="subtitle anim-up d1">{{ t('landing.heroSubtitle') }}</p>
           <div class="cta-group anim-up d2">
             <el-button type="primary" size="large" round @click="router.push('/register')">
-              Start Free <el-icon class="el-icon--right"><ArrowRight /></el-icon>
+              {{ t('landing.startFree') }} <el-icon class="el-icon--right"><ArrowRight /></el-icon>
             </el-button>
-            <el-button size="large" round plain>Learn More</el-button>
+            <el-button size="large" round plain>{{ t('landing.learnMore') }}</el-button>
           </div>
         </div>
         <div class="hero-visual anim-fade d3">
@@ -79,10 +83,10 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
             </div>
           </div>
           <div class="floating-badge badge-1">
-            <el-icon><Monitor /></el-icon> Capture Ready
+            <el-icon><Monitor /></el-icon> {{ t('landing.captureReady') }}
           </div>
           <div class="floating-badge badge-2">
-            <el-icon><Message /></el-icon> Delivered!
+            <el-icon><Message /></el-icon> {{ t('landing.delivered') }}
           </div>
         </div>
       </div>
@@ -90,13 +94,13 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 
     <section class="features">
       <div class="container">
-        <h2 class="section-title">Powerful Capabilities</h2>
-        <p class="section-subtitle">Everything you need for web visual archiving.</p>
+        <h2 class="section-title">{{ t('landing.featuresTitle') }}</h2>
+        <p class="section-subtitle">{{ t('landing.featuresSubtitle') }}</p>
         <div class="features-grid">
           <div v-for="(f, i) in features" :key="i" class="feature-card">
             <div class="feature-icon"><component :is="f.icon" /></div>
-            <h3>{{ f.title }}</h3>
-            <p>{{ f.desc }}</p>
+            <h3>{{ t(f.titleKey) }}</h3>
+            <p>{{ t(f.descKey) }}</p>
           </div>
         </div>
       </div>
@@ -104,12 +108,12 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 
     <section class="how-it-works">
       <div class="container">
-        <h2 class="section-title">How It Works</h2>
+        <h2 class="section-title">{{ t('landing.howItWorks') }}</h2>
         <div class="steps">
           <div v-for="(s, i) in steps" :key="i" class="step">
             <div class="step-num">{{ s.num }}</div>
-            <h3>{{ s.title }}</h3>
-            <p>{{ s.desc }}</p>
+            <h3>{{ t(s.titleKey) }}</h3>
+            <p>{{ t(s.descKey) }}</p>
           </div>
         </div>
       </div>
@@ -117,9 +121,9 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 
     <section class="cta-section">
       <div class="container cta-inner">
-        <h2>Ready to automate your screenshots?</h2>
-        <p>Join developers and businesses saving time with Pagemail.</p>
-        <el-button size="large" round class="cta-btn" @click="router.push('/register')">Get Started Now</el-button>
+        <h2>{{ t('landing.ctaTitle') }}</h2>
+        <p>{{ t('landing.ctaSubtitle') }}</p>
+        <el-button size="large" round class="cta-btn" @click="router.push('/register')">{{ t('landing.ctaButton') }}</el-button>
       </div>
     </section>
 
@@ -127,12 +131,12 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
       <div class="container footer-inner">
         <div class="footer-brand">
           <h3>Pagemail</h3>
-          <p>&copy; 2024 Pagemail. All rights reserved.</p>
+          <p>{{ t('landing.footerCopyright') }}</p>
         </div>
         <div class="footer-links">
-          <a href="#">Privacy</a>
-          <a href="#">Terms</a>
-          <a href="#">Contact</a>
+          <a href="#">{{ t('landing.privacy') }}</a>
+          <a href="#">{{ t('landing.terms') }}</a>
+          <a href="#">{{ t('landing.contact') }}</a>
         </div>
       </div>
     </footer>

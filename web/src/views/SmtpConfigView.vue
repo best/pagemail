@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { smtpApi } from '@/api/smtp'
 import type { SmtpProfile } from '@/types/settings'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete, Edit, Check } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
+
+const { t } = useI18n()
 
 const profiles = ref<SmtpProfile[]>([])
 const loading = ref(false)
@@ -24,12 +27,12 @@ const form = ref<Partial<SmtpProfile>>({
   is_default: false
 })
 
-const rules: FormRules = {
-  name: [{ required: true, message: 'Name is required', trigger: 'blur' }],
-  host: [{ required: true, message: 'Host is required', trigger: 'blur' }],
-  port: [{ required: true, message: 'Port is required', trigger: 'blur' }],
-  from_email: [{ required: true, message: 'From Email is required', trigger: 'blur' }]
-}
+const rules = computed<FormRules>(() => ({
+  name: [{ required: true, message: t('webhook.nameRequired'), trigger: 'blur' }],
+  host: [{ required: true, message: t('validation.urlRequired'), trigger: 'blur' }],
+  port: [{ required: true, message: t('validation.urlRequired'), trigger: 'blur' }],
+  from_email: [{ required: true, message: t('validation.emailRequired'), trigger: 'blur' }]
+}))
 
 const fetchProfiles = async () => {
   loading.value = true
@@ -72,7 +75,7 @@ const handleSubmit = async () => {
       } else {
         await smtpApi.createProfile(form.value)
       }
-      ElMessage.success(isEditing.value ? 'Profile updated' : 'Profile created')
+      ElMessage.success(isEditing.value ? t('smtp.profileUpdated') : t('smtp.profileCreated'))
       dialogVisible.value = false
       fetchProfiles()
     } catch {
@@ -82,12 +85,12 @@ const handleSubmit = async () => {
 }
 
 const handleDelete = (id: string) => {
-  ElMessageBox.confirm('Are you sure you want to delete this profile?', 'Warning', {
+  ElMessageBox.confirm(t('smtp.deleteConfirm'), 'Warning', {
     type: 'warning'
   }).then(async () => {
     try {
       await smtpApi.deleteProfile(id)
-      ElMessage.success('Profile deleted')
+      ElMessage.success(t('smtp.profileDeleted'))
       fetchProfiles()
     } catch {
       // handled globally
@@ -97,14 +100,14 @@ const handleDelete = (id: string) => {
 
 const handleTest = async (id: string) => {
   try {
-    const { value } = await ElMessageBox.prompt('Enter email address to send test to', 'Test Connection', {
-      confirmButtonText: 'Send',
-      cancelButtonText: 'Cancel',
+    const { value } = await ElMessageBox.prompt(t('smtp.testPrompt'), t('smtp.testTitle'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       inputPattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-      inputErrorMessage: 'Invalid Email'
+      inputErrorMessage: t('smtp.invalidEmail')
     })
     await smtpApi.testProfile(id, value)
-    ElMessage.success('Test email sent successfully')
+    ElMessage.success(t('smtp.testSuccess'))
   } catch {
     // cancelled or error
   }
@@ -116,23 +119,23 @@ onMounted(fetchProfiles)
 <template>
   <div class="smtp-view">
     <div class="header">
-      <h2>SMTP Configuration</h2>
-      <el-button type="primary" :icon="Plus" @click="openDialog()">Add Profile</el-button>
+      <h2>{{ t('smtp.title') }}</h2>
+      <el-button type="primary" :icon="Plus" @click="openDialog()">{{ t('smtp.addProfile') }}</el-button>
     </div>
 
     <el-card shadow="hover" class="pm-table-card">
       <el-table :data="profiles" v-loading="loading" stripe>
-      <el-table-column prop="name" label="Name" />
-      <el-table-column prop="host" label="Host" />
-      <el-table-column prop="username" label="Username" />
-      <el-table-column label="Default" align="center">
+      <el-table-column prop="name" :label="t('smtp.name')" />
+      <el-table-column prop="host" :label="t('smtp.host')" />
+      <el-table-column prop="username" :label="t('smtp.username')" />
+      <el-table-column :label="t('smtp.default')" align="center">
         <template #default="{ row }">
           <el-icon v-if="row.is_default" color="var(--el-color-success)"><Check /></el-icon>
         </template>
       </el-table-column>
-      <el-table-column label="Actions" align="right" width="250">
+      <el-table-column :label="t('smtp.actions')" align="right" width="250">
         <template #default="{ row }">
-          <el-button size="small" @click="handleTest(row.id)">Test</el-button>
+          <el-button size="small" @click="handleTest(row.id)">{{ t('smtp.test') }}</el-button>
           <el-button size="small" :icon="Edit" @click="openDialog(row)" />
           <el-button size="small" type="danger" :icon="Delete" @click="handleDelete(row.id)" />
         </template>
@@ -140,44 +143,44 @@ onMounted(fetchProfiles)
     </el-table>
     </el-card>
 
-    <el-dialog v-model="dialogVisible" :title="isEditing ? 'Edit Profile' : 'New Profile'">
+    <el-dialog v-model="dialogVisible" :title="isEditing ? t('smtp.editProfile') : t('smtp.newProfile')">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="Profile Name" prop="name">
+        <el-form-item :label="t('smtp.profileName')" prop="name">
           <el-input v-model="form.name" />
         </el-form-item>
-        <el-form-item label="Host" prop="host">
+        <el-form-item :label="t('smtp.host')" prop="host">
           <el-input v-model="form.host" />
         </el-form-item>
-        <el-form-item label="Port" prop="port">
+        <el-form-item :label="t('smtp.port')" prop="port">
           <el-input-number v-model="form.port" />
         </el-form-item>
-        <el-form-item label="Username" prop="username">
+        <el-form-item :label="t('smtp.username')" prop="username">
           <el-input v-model="form.username" />
         </el-form-item>
-        <el-form-item label="Password" prop="password">
+        <el-form-item :label="t('smtp.password')" prop="password">
           <el-input
             v-model="form.password"
             type="password"
             show-password
-            placeholder="Leave empty to keep current"
+            :placeholder="t('smtp.passwordPlaceholder')"
           />
         </el-form-item>
-        <el-form-item label="From Name" prop="from_name">
+        <el-form-item :label="t('smtp.fromName')" prop="from_name">
           <el-input v-model="form.from_name" />
         </el-form-item>
-        <el-form-item label="From Email" prop="from_email">
+        <el-form-item :label="t('smtp.fromEmail')" prop="from_email">
           <el-input v-model="form.from_email" />
         </el-form-item>
-        <el-form-item label="Use TLS" prop="use_tls">
+        <el-form-item :label="t('smtp.useTls')" prop="use_tls">
           <el-switch v-model="form.use_tls" />
         </el-form-item>
-        <el-form-item label="Set as Default" prop="is_default">
+        <el-form-item :label="t('smtp.setDefault')" prop="is_default">
           <el-switch v-model="form.is_default" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="handleSubmit">Save</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="handleSubmit">{{ t('common.save') }}</el-button>
       </template>
     </el-dialog>
   </div>

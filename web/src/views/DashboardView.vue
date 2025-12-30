@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { tasksApi } from '@/api/tasks'
 import type { Task } from '@/types/task'
 import { Document, Finished, Warning, Plus, Refresh } from '@element-plus/icons-vue'
 import { usePolling } from '@/composables/usePolling'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const tasks = ref<Task[]>([])
 const loading = ref(true)
@@ -21,9 +23,9 @@ const stats = computed(() => {
 
 const timeGreeting = computed(() => {
   const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 18) return 'Good afternoon'
-  return 'Good evening'
+  if (hour < 12) return t('dashboard.greeting.morning')
+  if (hour < 18) return t('dashboard.greeting.afternoon')
+  return t('dashboard.greeting.evening')
 })
 
 const userName = computed(() => {
@@ -75,10 +77,10 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
     <div class="dashboard-header anim-up">
       <div class="header-content">
         <h1><span class="gradient-text">{{ timeGreeting }}</span>, {{ userName }}</h1>
-        <p>Here's an overview of your web page captures</p>
+        <p>{{ t('dashboard.overview') }}</p>
       </div>
       <el-button type="primary" size="large" :icon="Plus" @click="$router.push('/tasks/new')">
-        New Capture
+        {{ t('dashboard.newCapture') }}
       </el-button>
     </div>
 
@@ -89,7 +91,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
             <el-icon :size="24"><Document /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-label">Total Captures</div>
+            <div class="stat-label">{{ t('dashboard.totalCaptures') }}</div>
             <div class="stat-value">{{ stats.total }}</div>
           </div>
           <el-icon class="stat-bg-icon" aria-hidden="true"><Document /></el-icon>
@@ -101,7 +103,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
             <el-icon :size="24"><Finished /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-label">Completed</div>
+            <div class="stat-label">{{ t('dashboard.completed') }}</div>
             <div class="stat-value">{{ stats.completed }}</div>
           </div>
           <el-icon class="stat-bg-icon" aria-hidden="true"><Finished /></el-icon>
@@ -113,7 +115,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
             <el-icon :size="24"><Warning /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-label">Pending</div>
+            <div class="stat-label">{{ t('dashboard.pending') }}</div>
             <div class="stat-value">{{ stats.pending }}</div>
           </div>
           <el-icon class="stat-bg-icon" aria-hidden="true"><Warning /></el-icon>
@@ -123,45 +125,45 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
 
     <div class="section-header anim-up d2">
       <div class="title-group">
-        <h2>Recent Activity</h2>
+        <h2>{{ t('dashboard.recentActivity') }}</h2>
         <span v-if="!loading" class="last-updated">
           <el-icon v-if="isRunning" class="is-loading"><Refresh /></el-icon>
           {{ formatTime(lastRefreshed) }}
         </span>
       </div>
-      <el-button text type="primary" @click="$router.push('/tasks')">View All</el-button>
+      <el-button text type="primary" @click="$router.push('/tasks')">{{ t('common.viewAll') }}</el-button>
     </div>
 
     <el-card class="recent-tasks anim-up d3" shadow="never">
       <el-alert
         v-if="loadError"
-        title="Failed to load tasks"
+        :title="t('dashboard.loadFailed')"
         type="error"
         show-icon
         :closable="false"
         style="margin-bottom: 16px"
       >
         <template #default>
-          <el-button size="small" type="primary" link @click="fetchTasks">Retry</el-button>
+          <el-button size="small" type="primary" link @click="fetchTasks">{{ t('common.retry') }}</el-button>
         </template>
       </el-alert>
       <el-table v-if="recentTasks.length > 0" :data="recentTasks" v-loading="loading">
-        <el-table-column prop="url" label="URL" show-overflow-tooltip />
-        <el-table-column prop="status" label="Status" width="120">
+        <el-table-column prop="url" :label="t('tasks.url')" show-overflow-tooltip />
+        <el-table-column prop="status" :label="t('tasks.status')" width="120">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)" effect="light" round>{{ row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" label="Created" width="180">
+        <el-table-column prop="created_at" :label="t('tasks.created')" width="180">
           <template #default="{ row }">{{ new Date(row.created_at).toLocaleString() }}</template>
         </el-table-column>
         <el-table-column width="100" align="right">
           <template #default="{ row }">
-            <el-button size="small" text type="primary" @click="$router.push(`/tasks/${row.id}`)">View</el-button>
+            <el-button size="small" text type="primary" @click="$router.push(`/tasks/${row.id}`)">{{ t('dashboard.view') }}</el-button>
           </template>
         </el-table-column>
       </el-table>
-      <el-empty v-else-if="!loading && !loadError" description="No tasks yet" />
+      <el-empty v-else-if="!loading && !loadError" :description="t('dashboard.noTasksYet')" />
     </el-card>
   </div>
 </template>

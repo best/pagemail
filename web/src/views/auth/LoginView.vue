@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
 import type { FormRules } from 'element-plus'
 
+const { t } = useI18n()
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -14,23 +16,23 @@ const form = reactive({
   password: ''
 })
 
-const rules: FormRules = {
+const rules = computed<FormRules>(() => ({
   email: [
-    { required: true, message: 'Please enter email', trigger: 'blur' },
-    { type: 'email', message: 'Please enter valid email', trigger: 'blur' }
+    { required: true, message: t('validation.emailRequired'), trigger: 'blur' },
+    { type: 'email', message: t('validation.emailInvalid'), trigger: 'blur' }
   ],
   password: [
-    { required: true, message: 'Please enter password', trigger: 'blur' }
+    { required: true, message: t('validation.passwordRequired'), trigger: 'blur' }
   ]
-}
+}))
 
 async function handleSubmit() {
   loading.value = true
   try {
     await authStore.login(form.email, form.password)
-    ElMessage.success('Login successful')
+    ElMessage.success(t('auth.loginSuccess'))
     router.push('/dashboard')
-  } catch (error) {
+  } catch {
     // Error handled by interceptor
   } finally {
     loading.value = false
@@ -41,25 +43,25 @@ async function handleSubmit() {
 <template>
   <div class="auth-view">
     <div class="auth-header">
-      <h2>Welcome back</h2>
-      <p>Sign in to continue</p>
+      <h2>{{ t('auth.welcomeBack') }}</h2>
+      <p>{{ t('auth.signInContinue') }}</p>
     </div>
 
     <el-form :model="form" :rules="rules" label-position="top" @submit.prevent="handleSubmit">
-      <el-form-item label="Email" prop="email">
+      <el-form-item :label="t('auth.email')" prop="email">
         <el-input
           v-model="form.email"
           type="email"
-          placeholder="Enter your email"
+          :placeholder="t('auth.email')"
           size="large"
         />
       </el-form-item>
 
-      <el-form-item label="Password" prop="password">
+      <el-form-item :label="t('auth.password')" prop="password">
         <el-input
           v-model="form.password"
           type="password"
-          placeholder="Enter your password"
+          :placeholder="t('auth.password')"
           show-password
           size="large"
         />
@@ -73,13 +75,13 @@ async function handleSubmit() {
           size="large"
           class="submit-btn"
         >
-          Sign in
+          {{ t('auth.signInBtn') }}
         </el-button>
       </el-form-item>
 
       <div class="auth-footer">
-        Don't have an account?
-        <router-link to="/register">Create one</router-link>
+        {{ t('auth.noAccount') }}
+        <router-link to="/register">{{ t('auth.createOne') }}</router-link>
       </div>
     </el-form>
   </div>

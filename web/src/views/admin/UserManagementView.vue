@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { adminApi } from '@/api/admin'
 import type { User } from '@/types/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
+
+const { t } = useI18n()
 
 const users = ref<User[]>([])
 const loading = ref(false)
@@ -23,7 +26,7 @@ const fetchUsers = async () => {
 const toggleStatus = async (user: User) => {
   try {
     await adminApi.updateUser(user.id, { is_active: !user.is_active })
-    ElMessage.success('User status updated')
+    ElMessage.success(t('admin.userManagement.statusUpdated'))
     fetchUsers()
   } catch {
     // handled globally
@@ -31,10 +34,10 @@ const toggleStatus = async (user: User) => {
 }
 
 const handleDelete = (id: string) => {
-  ElMessageBox.confirm('Delete user?', 'Warning', { type: 'warning' })
+  ElMessageBox.confirm(t('admin.userManagement.deleteConfirm'), 'Warning', { type: 'warning' })
     .then(async () => {
       await adminApi.deleteUser(id)
-      ElMessage.success('User deleted')
+      ElMessage.success(t('admin.userManagement.userDeleted'))
       fetchUsers()
     })
     .catch(() => {})
@@ -45,34 +48,34 @@ onMounted(fetchUsers)
 
 <template>
   <div class="user-mgmt">
-    <h2>User Management</h2>
+    <h2>{{ t('admin.userManagement.title') }}</h2>
     <el-table :data="users" v-loading="loading">
-      <el-table-column prop="email" label="Email" />
-      <el-table-column prop="role" label="Role">
+      <el-table-column prop="email" :label="t('admin.userManagement.email')" />
+      <el-table-column prop="role" :label="t('admin.userManagement.role')">
         <template #default="{ row }">
           <el-tag :type="row.role === 'admin' ? 'danger' : 'info'">{{ row.role }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Status">
+      <el-table-column :label="t('admin.userManagement.status')">
         <template #default="{ row }">
           <el-tag :type="row.is_active ? 'success' : 'info'">
-            {{ row.is_active ? 'Active' : 'Inactive' }}
+            {{ row.is_active ? t('webhook.active') : t('webhook.inactive') }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Created" width="180">
+      <el-table-column :label="t('admin.userManagement.created')" width="180">
         <template #default="{ row }">{{ new Date(row.created_at).toLocaleString() }}</template>
       </el-table-column>
-      <el-table-column label="Actions" align="right">
+      <el-table-column :label="t('admin.userManagement.actions')" align="right">
         <template #default="{ row }">
           <el-button
             size="small"
             :type="row.is_active ? 'warning' : 'success'"
             @click="toggleStatus(row)"
           >
-            {{ row.is_active ? 'Deactivate' : 'Activate' }}
+            {{ row.is_active ? t('admin.userManagement.deactivate') : t('admin.userManagement.activate') }}
           </el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row.id)">Delete</el-button>
+          <el-button size="small" type="danger" @click="handleDelete(row.id)">{{ t('common.delete') }}</el-button>
         </template>
       </el-table-column>
     </el-table>

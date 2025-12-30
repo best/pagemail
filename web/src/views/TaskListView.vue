@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { tasksApi } from '@/api/tasks'
 import type { Task } from '@/types/task'
 import { useRouter } from 'vue-router'
@@ -7,6 +8,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { View, Refresh, Delete, Plus } from '@element-plus/icons-vue'
 import { usePolling } from '@/composables/usePolling'
 
+const { t } = useI18n()
 const router = useRouter()
 const tasks = ref<Task[]>([])
 const total = ref(0)
@@ -54,7 +56,7 @@ const handlePageChange = (page: number) => {
 const handleRetry = async (id: string) => {
   try {
     await tasksApi.retryTask(id)
-    ElMessage.success('Task queued for retry')
+    ElMessage.success(t('tasks.retrySuccess'))
     fetchTasks()
   } catch {
     // handled globally
@@ -62,10 +64,10 @@ const handleRetry = async (id: string) => {
 }
 
 const handleDelete = (id: string) => {
-  ElMessageBox.confirm('Are you sure?', 'Warning', { type: 'warning' })
+  ElMessageBox.confirm(t('tasks.deleteConfirm'), 'Warning', { type: 'warning' })
     .then(async () => {
       await tasksApi.deleteTask(id)
-      ElMessage.success('Task deleted')
+      ElMessage.success(t('tasks.deleteSuccess'))
       fetchTasks()
     })
     .catch(() => {})
@@ -91,44 +93,44 @@ watch(() => query.status, () => {
   <div class="task-list">
     <div class="header">
       <div class="title-group">
-        <h2>Tasks</h2>
+        <h2>{{ t('tasks.title') }}</h2>
         <span v-if="!loading" class="last-updated">
           <el-icon v-if="isRunning" class="is-loading"><Refresh /></el-icon>
           {{ formatTime(lastRefreshed) }}
         </span>
       </div>
       <div class="filters">
-        <el-select v-model="query.status" placeholder="Filter Status" clearable style="width: 150px">
-          <el-option label="Pending" value="pending" />
-          <el-option label="Processing" value="processing" />
-          <el-option label="Completed" value="completed" />
-          <el-option label="Failed" value="failed" />
+        <el-select v-model="query.status" :placeholder="t('tasks.filterStatus')" clearable style="width: 150px">
+          <el-option :label="t('tasks.pending')" value="pending" />
+          <el-option :label="t('tasks.processing')" value="processing" />
+          <el-option :label="t('tasks.completed')" value="completed" />
+          <el-option :label="t('tasks.failed')" value="failed" />
         </el-select>
-        <el-button type="primary" :icon="Plus" @click="router.push('/tasks/new')">New Task</el-button>
+        <el-button type="primary" :icon="Plus" @click="router.push('/tasks/new')">{{ t('tasks.newTask') }}</el-button>
       </div>
     </div>
 
     <el-card shadow="hover" class="pm-table-card">
       <el-table :data="tasks" v-loading="loading" style="width: 100%" stripe>
-      <el-table-column label="URL" min-width="250">
+      <el-table-column :label="t('tasks.url')" min-width="250">
         <template #default="{ row }">
           <div class="url-col">{{ row.url }}</div>
         </template>
       </el-table-column>
-      <el-table-column label="Status" width="100">
+      <el-table-column :label="t('tasks.status')" width="100">
         <template #default="{ row }">
           <el-tag :type="getStatusType(row.status)" size="small">{{ row.status }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Formats" width="150">
+      <el-table-column :label="t('tasks.formats')" width="150">
         <template #default="{ row }">
           <el-tag v-for="fmt in row.formats" :key="fmt" size="small" class="mr-1">{{ fmt }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="Created" width="180">
+      <el-table-column :label="t('tasks.created')" width="180">
         <template #default="{ row }">{{ new Date(row.created_at).toLocaleString() }}</template>
       </el-table-column>
-      <el-table-column label="Actions" width="180" align="right">
+      <el-table-column :label="t('tasks.actions')" width="180" align="right">
         <template #default="{ row }">
           <el-button size="small" :icon="View" circle @click="router.push(`/tasks/${row.id}`)" />
           <el-button

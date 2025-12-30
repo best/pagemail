@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 </script>
 
 <template>
   <div class="not-found">
-    <el-result icon="warning" title="404" sub-title="Page not found">
+    <el-result icon="warning" :title="t('notFound.title')" :sub-title="t('notFound.subtitle')">
       <template #extra>
-        <el-button type="primary" @click="$router.push('/')">Back to Home</el-button>
+        <el-button type="primary" @click="$router.push('/')">{{ t('notFound.backHome') }}</el-button>
       </template>
     </el-result>
   </div>

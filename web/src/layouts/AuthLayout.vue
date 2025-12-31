@@ -1,19 +1,24 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useUiStore } from '@/stores/ui'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import { Moon, Sunny } from '@element-plus/icons-vue'
 import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
 
 const { t } = useI18n()
 const uiStore = useUiStore()
+const siteConfig = useSiteConfigStore()
+
+onMounted(() => siteConfig.fetchConfig())
 </script>
 
 <template>
   <div class="auth-layout">
     <div class="brand-side">
       <div class="brand-content">
-        <h1 class="brand-logo">Pagemail</h1>
+        <h1 class="brand-logo">{{ siteConfig.siteName }}</h1>
         <p class="brand-tagline" v-html="t('auth.brandTagline').replace('\n', '<br>')"></p>
       </div>
       <div class="shape shape-1"></div>

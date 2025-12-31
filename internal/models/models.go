@@ -45,6 +45,12 @@ type RolePermission struct {
 	Permission   Permission `gorm:"foreignKey:PermissionID" json:"permission,omitempty"`
 }
 
+type SystemSetting struct {
+	Key       string    `gorm:"primaryKey" json:"key"`
+	Value     string    `gorm:"type:text" json:"value"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type SMTPProfile struct {
 	ID          uuid.UUID  `gorm:"type:uuid;primary_key" json:"id"`
 	UserID      *uuid.UUID `gorm:"type:uuid;index" json:"user_id,omitempty"`

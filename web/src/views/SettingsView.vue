@@ -38,7 +38,7 @@ const updatePassword = async () => {
 
 <template>
   <div class="settings-view">
-    <div class="header">
+    <div class="page-header">
       <h2>{{ t('settings.title') }}</h2>
     </div>
 
@@ -97,8 +97,14 @@ const updatePassword = async () => {
 
 <style scoped>
 .settings-view {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
+}
+.page-header {
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  margin: 0;
 }
 .config-link {
   padding: 20px;

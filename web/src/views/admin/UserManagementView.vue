@@ -48,7 +48,9 @@ onMounted(fetchUsers)
 
 <template>
   <div class="user-mgmt">
-    <h2>{{ t('admin.userManagement.title') }}</h2>
+    <div class="page-header">
+      <h2>{{ t('admin.userManagement.title') }}</h2>
+    </div>
     <el-table :data="users" v-loading="loading">
       <el-table-column prop="email" :label="t('admin.userManagement.email')" />
       <el-table-column prop="role" :label="t('admin.userManagement.role')">
@@ -93,7 +95,14 @@ onMounted(fetchUsers)
 
 <style scoped>
 .user-mgmt {
-  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.page-header {
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  margin: 0;
 }
 .pagination {
   margin-top: 20px;

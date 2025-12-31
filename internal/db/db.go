@@ -49,6 +49,7 @@ func Migrate(db *gorm.DB) error {
 		&models.User{},
 		&models.Permission{},
 		&models.RolePermission{},
+		&models.SystemSetting{},
 		&models.SMTPProfile{},
 		&models.WebhookEndpoint{},
 		&models.CaptureTask{},

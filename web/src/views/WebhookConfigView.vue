@@ -154,4 +154,7 @@ onMounted(fetchWebhooks)
   align-items: center;
   margin-bottom: 20px;
 }
+.header h2 {
+  margin: 0;
+}
 </style>

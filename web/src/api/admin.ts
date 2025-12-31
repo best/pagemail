@@ -1,6 +1,6 @@
 import apiClient from './client'
 import type { User } from '@/types/user'
-import type { PaginatedResponse } from '@/types/api'
+import type { PaginatedResponse, SiteConfig } from '@/types/api'
 
 export const adminApi = {
   listUsers(params: { page?: number; limit?: number }) {
@@ -16,11 +16,19 @@ export const adminApi = {
   },
 
   getSystemConfig() {
-    return apiClient.get('/admin/system/config')
+    return apiClient.get('/admin/storage')
   },
 
   updateSystemConfig(data: Record<string, unknown>) {
-    return apiClient.put('/admin/system/config', data)
+    return apiClient.put('/admin/storage', data)
+  },
+
+  getSiteConfig() {
+    return apiClient.get<SiteConfig>('/admin/config/site')
+  },
+
+  updateSiteConfig(data: SiteConfig) {
+    return apiClient.put<SiteConfig>('/admin/config/site', data)
   },
 
   getAuditLogs(params: { page?: number; limit?: number }) {

@@ -250,7 +250,13 @@
       "s3Bucket": "S3 Bucket",
       "s3Region": "S3 Region",
       "defaultFormats": "Default Output Formats",
-      "maxConcurrent": "Max Concurrent Captures",
+      "maxConcurrent": "Max Concurrent Captures"
+    },
+    "siteConfig": {
+      "title": "Site Settings",
+      "siteName": "Site Name",
+      "siteSlogan": "Footer Info / Slogan",
+      "sloganHint": "Supports HTML, e.g. <a href=\"/privacy\">Privacy</a>",
       "saveConfig": "Save Configuration",
       "configSaved": "Configuration saved"
     },

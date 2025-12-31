@@ -158,6 +158,12 @@ const handleSubmit = async () => {
   max-width: 800px;
   margin: 0 auto;
 }
+.header {
+  margin-bottom: 20px;
+}
+.header h2 {
+  margin: 0;
+}
 .hint {
   font-size: 12px;
   color: var(--el-text-color-secondary);

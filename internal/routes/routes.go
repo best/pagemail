@@ -23,6 +23,7 @@ func Setup(cfg *config.Config, db *gorm.DB, store storage.Storage) *gin.Engine {
 	v1 := r.Group("/v1")
 	v1.GET("/health", h.Health)
 	v1.GET("/ready", h.Ready)
+	v1.GET("/config/site", h.GetPublicSiteConfig)
 
 	auth := v1.Group("/auth")
 	auth.POST("/register", h.Register)
@@ -73,6 +74,8 @@ func Setup(cfg *config.Config, db *gorm.DB, store storage.Storage) *gin.Engine {
 	admin.GET("/users/:id", h.AdminGetUser)
 	admin.PATCH("/users/:id", h.AdminUpdateUser)
 	admin.DELETE("/users/:id", h.AdminDeleteUser)
+	admin.GET("/config/site", h.GetSiteConfig)
+	admin.PUT("/config/site", h.UpdateSiteConfig)
 	admin.GET("/smtp/global", h.GetGlobalSMTP)
 	admin.PUT("/smtp/global", h.UpdateGlobalSMTP)
 	admin.GET("/storage", h.GetStorageConfig)

@@ -2,8 +2,11 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"pagemail/internal/models"
 	"pagemail/internal/pkg/errors"
@@ -213,4 +216,61 @@ func (h *Handler) UpdateStorageConfig(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Storage configuration should be updated via environment variables or config file",
 	})
+}
+
+func (h *Handler) GetSiteConfig(c *gin.Context) {
+	config, err := h.loadSiteConfig()
+	if err != nil {
+		errors.InternalError("Failed to load site config").Respond(c)
+		return
+	}
+	c.JSON(http.StatusOK, config)
+}
+
+func (h *Handler) UpdateSiteConfig(c *gin.Context) {
+	var req map[string]string
+	if err := c.ShouldBindJSON(&req); err != nil {
+		errors.BadRequest(err.Error()).Respond(c)
+		return
+	}
+	if len(req) == 0 {
+		errors.BadRequest("No configuration values provided").Respond(c)
+		return
+	}
+
+	for key := range req {
+		if !isAllowedSiteConfigKey(key) {
+			errors.BadRequest("Unsupported site config key: " + key).Respond(c)
+			return
+		}
+	}
+
+	now := time.Now()
+	err := h.db.Transaction(func(tx *gorm.DB) error {
+		for key, value := range req {
+			setting := models.SystemSetting{
+				Key:       key,
+				Value:     value,
+				UpdatedAt: now,
+			}
+			if err := tx.Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "key"}},
+				DoUpdates: clause.AssignmentColumns([]string{"value", "updated_at"}),
+			}).Create(&setting).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		errors.InternalError("Failed to update site config").Respond(c)
+		return
+	}
+
+	config, err := h.loadSiteConfig()
+	if err != nil {
+		errors.InternalError("Failed to load site config").Respond(c)
+		return
+	}
+	c.JSON(http.StatusOK, config)
 }

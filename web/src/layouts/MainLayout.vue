@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterView, useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useUiStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
 import {
   House,
@@ -23,6 +24,9 @@ const router = useRouter()
 const route = useRoute()
 const uiStore = useUiStore()
 const authStore = useAuthStore()
+const siteConfig = useSiteConfigStore()
+
+onMounted(() => siteConfig.fetchConfig())
 
 const menuItems = computed(() => {
   const items = [
@@ -63,8 +67,8 @@ function handleLogout() {
 
     <el-aside :width="uiStore.sidebarCollapsed ? '64px' : '220px'" class="sidebar">
       <div class="logo">
-        <span v-if="!uiStore.sidebarCollapsed">Pagemail</span>
-        <span v-else>P</span>
+        <span v-if="!uiStore.sidebarCollapsed">{{ siteConfig.siteName }}</span>
+        <span v-else>{{ siteConfig.siteName.charAt(0) }}</span>
       </div>
       <el-menu
         :default-active="route.path"

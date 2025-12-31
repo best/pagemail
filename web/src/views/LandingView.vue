@@ -2,13 +2,16 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import DOMPurify from 'dompurify'
 import { useUiStore } from '@/stores/ui'
+import { useSiteConfigStore } from '@/stores/siteConfig'
 import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
 import { Monitor, Message, Timer, ArrowRight, Moon, Sunny } from '@element-plus/icons-vue'
 
 const { t } = useI18n()
 const router = useRouter()
 const uiStore = useUiStore()
+const siteConfig = useSiteConfigStore()
 
 const features = computed(() => [
   { icon: Monitor, titleKey: 'landing.feature1Title', descKey: 'landing.feature1Desc' },
@@ -25,7 +28,15 @@ const steps = computed(() => [
 const isScrolled = ref(false)
 const handleScroll = () => { isScrolled.value = window.scrollY > 50 }
 
-onMounted(() => window.addEventListener('scroll', handleScroll, { passive: true }))
+const sanitizedSlogan = computed(() => {
+  if (!siteConfig.siteSlogan) return ''
+  return DOMPurify.sanitize(siteConfig.siteSlogan)
+})
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  siteConfig.fetchConfig()
+})
 onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 </script>
 
@@ -33,7 +44,7 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
   <div class="landing">
     <nav :class="['nav', { scrolled: isScrolled }]">
       <div class="container nav-inner">
-        <div class="logo">Pagemail</div>
+        <div class="logo">{{ siteConfig.siteName }}</div>
         <div class="nav-actions">
           <LanguageSwitcher />
           <el-button :icon="uiStore.isDark ? Sunny : Moon" text circle aria-label="Toggle theme" @click="uiStore.toggleTheme" />
@@ -130,8 +141,9 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
     <footer class="footer">
       <div class="container footer-inner">
         <div class="footer-brand">
-          <h3>Pagemail</h3>
-          <p>{{ t('landing.footerCopyright') }}</p>
+          <h3>{{ siteConfig.siteName }}</h3>
+          <p>{{ siteConfig.copyright }}</p>
+          <div v-if="sanitizedSlogan" class="footer-slogan" v-html="sanitizedSlogan"></div>
         </div>
         <div class="footer-links">
           <a href="#">{{ t('landing.privacy') }}</a>
@@ -588,7 +600,7 @@ html.dark .step-num {
 .footer-inner {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .footer-brand h3 {
@@ -613,6 +625,21 @@ html.dark .step-num {
 }
 
 .footer-links a:hover {
+  color: var(--pm-primary);
+}
+
+.footer-slogan {
+  color: var(--pm-text-muted);
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.footer-slogan :deep(a) {
+  color: var(--pm-text-body);
+  text-decoration: none;
+}
+
+.footer-slogan :deep(a:hover) {
   color: var(--pm-primary);
 }
 

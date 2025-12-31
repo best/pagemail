@@ -21,3 +21,8 @@ export interface PaginatedResponse<T> {
     total_pages: number
   }
 }
+
+export interface SiteConfig {
+  site_name: string
+  site_slogan: string
+}

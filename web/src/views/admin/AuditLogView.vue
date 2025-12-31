@@ -26,7 +26,9 @@ onMounted(fetchLogs)
 
 <template>
   <div class="audit-log">
-    <h2>{{ t('admin.auditLogs.title') }}</h2>
+    <div class="page-header">
+      <h2>{{ t('admin.auditLogs.title') }}</h2>
+    </div>
     <el-table :data="logs" v-loading="loading" style="width: 100%">
       <el-table-column prop="created_at" :label="t('admin.auditLogs.time')" width="180">
         <template #default="{ row }">{{ new Date(row.created_at).toLocaleString() }}</template>
@@ -56,7 +58,14 @@ onMounted(fetchLogs)
 
 <style scoped>
 .audit-log {
-  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.page-header {
+  margin-bottom: 20px;
+}
+.page-header h2 {
+  margin: 0;
 }
 .pagination {
   margin-top: 20px;

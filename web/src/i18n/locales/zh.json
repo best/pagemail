@@ -250,7 +250,13 @@
       "s3Bucket": "S3 存储桶",
       "s3Region": "S3 区域",
       "defaultFormats": "默认输出格式",
-      "maxConcurrent": "最大并发捕获数",
+      "maxConcurrent": "最大并发捕获数"
+    },
+    "siteConfig": {
+      "title": "站点设置",
+      "siteName": "站点名称",
+      "siteSlogan": "页脚信息 / 标语",
+      "sloganHint": "支持 HTML，如 <a href=\"/privacy\">隐私政策</a>",
       "saveConfig": "保存配置",
       "configSaved": "配置已保存"
     },

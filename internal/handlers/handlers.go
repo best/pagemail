@@ -22,6 +22,11 @@ type Handler struct {
 	storage storage.Storage
 }
 
+var siteConfigDefaults = map[string]string{
+	"site_name":   "Pagemail",
+	"site_slogan": "",
+}
+
 func New(cfg *config.Config, db *gorm.DB, store storage.Storage) *Handler {
 	return &Handler{cfg: cfg, db: db, storage: store}
 }
@@ -245,4 +250,46 @@ func (h *Handler) GetCurrentUser(c *gin.Context) {
 		"created_at": user.CreatedAt,
 		"updated_at": user.UpdatedAt,
 	})
+}
+
+func (h *Handler) GetPublicSiteConfig(c *gin.Context) {
+	siteConfig, err := h.loadSiteConfig()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"site_name":   siteConfigDefaults["site_name"],
+			"site_slogan": siteConfigDefaults["site_slogan"],
+		})
+		return
+	}
+	c.JSON(http.StatusOK, siteConfig)
+}
+
+func (h *Handler) loadSiteConfig() (gin.H, error) {
+	// Get allowed keys from whitelist
+	allowedKeys := make([]string, 0, len(siteConfigDefaults))
+	for key := range siteConfigDefaults {
+		allowedKeys = append(allowedKeys, key)
+	}
+
+	var settings []models.SystemSetting
+	if err := h.db.Where("key IN ?", allowedKeys).Find(&settings).Error; err != nil {
+		return nil, err
+	}
+
+	result := gin.H{}
+	for key, value := range siteConfigDefaults {
+		result[key] = value
+	}
+	for _, setting := range settings {
+		if isAllowedSiteConfigKey(setting.Key) {
+			result[setting.Key] = setting.Value
+		}
+	}
+
+	return result, nil
+}
+
+func isAllowedSiteConfigKey(key string) bool {
+	_, ok := siteConfigDefaults[key]
+	return ok
 }

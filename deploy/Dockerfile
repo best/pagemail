@@ -53,6 +53,7 @@ RUN apk add --no-cache \
     tzdata \
     nginx \
     supervisor \
+    shadow \
     chromium \
     nss \
     freetype \
@@ -75,6 +76,8 @@ COPY --from=frontend-builder /app/web/dist /app/web/dist
 # Copy configuration files
 COPY deploy/nginx.conf /etc/nginx/nginx.conf
 COPY deploy/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY deploy/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # Create necessary directories including crashpad
 RUN mkdir -p /app/storage /var/log/nginx /var/run/nginx /var/log/supervisor /tmp/crashpad && \
@@ -91,4 +94,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:8080/v1/health || exit 1
 
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

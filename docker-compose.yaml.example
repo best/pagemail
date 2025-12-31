@@ -8,6 +8,8 @@ services:
     env_file:
       - .env
     environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
       - DB_DRIVER=postgres
       - DB_URL=postgres://pagemail:${DB_PASSWORD:-pagemail}@postgres:5432/pagemail?sslmode=disable
     volumes:

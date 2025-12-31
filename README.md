@@ -59,12 +59,31 @@ Copy `.env.example` to `.env` and configure:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `PUID` | User ID for container process (match host user for bind mounts) | `1000` |
+| `PGID` | Group ID for container process (match host user for bind mounts) | `1000` |
 | `SERVER_ADDR` | Listen address | `:8080` |
 | `DB_DRIVER` | Database driver (postgres/sqlite) | `postgres` |
 | `DB_URL` | PostgreSQL connection string | - |
 | `JWT_SECRET` | JWT signing key | - |
 | `ENCRYPTION_KEY` | AES-256 key for sensitive data | - |
 | `STORAGE_BACKEND` | Storage backend (local/s3) | `local` |
+
+### Volume Permissions (Bind Mounts)
+
+When using bind mounts for storage, set `PUID` and `PGID` to match your host user:
+
+```bash
+# Get your UID/GID
+id -u  # e.g., 1000
+id -g  # e.g., 1000
+
+# docker-compose.yaml
+environment:
+  - PUID=1000
+  - PGID=1000
+volumes:
+  - ./storage:/app/storage  # bind mount
+```
 
 See `.env.example` for full configuration options.
 

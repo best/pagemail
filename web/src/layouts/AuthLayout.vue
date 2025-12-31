@@ -2,13 +2,10 @@
 import { onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { useUiStore } from '@/stores/ui'
 import { useSiteConfigStore } from '@/stores/siteConfig'
-import { Moon, Sunny } from '@element-plus/icons-vue'
-import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
+import PublicHeader from '@/components/common/PublicHeader.vue'
 
 const { t } = useI18n()
-const uiStore = useUiStore()
 const siteConfig = useSiteConfigStore()
 
 onMounted(() => siteConfig.fetchConfig())
@@ -16,26 +13,26 @@ onMounted(() => siteConfig.fetchConfig())
 
 <template>
   <div class="auth-layout">
-    <div class="brand-side">
-      <div class="brand-content">
-        <h1 class="brand-logo">{{ siteConfig.siteName }}</h1>
-        <p class="brand-tagline" v-html="t('auth.brandTagline').replace('\n', '<br>')"></p>
+    <PublicHeader solid />
+    <div class="auth-content">
+      <div class="brand-side">
+        <div class="brand-content">
+          <h1 class="brand-logo">{{ siteConfig.siteName }}</h1>
+          <p class="brand-tagline" v-html="t('auth.brandTagline').replace('\n', '<br>')"></p>
+        </div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="grid-overlay"></div>
       </div>
-      <div class="shape shape-1"></div>
-      <div class="shape shape-2"></div>
-      <div class="shape shape-3"></div>
-    </div>
-    <div class="form-side">
-      <div class="top-actions">
-        <LanguageSwitcher />
-        <el-button :icon="uiStore.isDark ? Sunny : Moon" text circle aria-label="Toggle Theme" @click="uiStore.toggleTheme" />
-      </div>
-      <div class="form-container">
-        <RouterView v-slot="{ Component }">
-          <Transition name="fade-slide" appear>
-            <component :is="Component" />
-          </Transition>
-        </RouterView>
+      <div class="form-side">
+        <div class="form-container">
+          <RouterView v-slot="{ Component }">
+            <Transition name="fade-slide" appear>
+              <component :is="Component" />
+            </Transition>
+          </RouterView>
+        </div>
       </div>
     </div>
   </div>
@@ -44,13 +41,20 @@ onMounted(() => siteConfig.fetchConfig())
 <style scoped>
 .auth-layout {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   width: 100%;
 }
 
+.auth-content {
+  display: flex;
+  flex: 1;
+  margin-top: 73px;
+}
+
 .brand-side {
   flex: 0 0 45%;
-  background: linear-gradient(135deg, var(--pm-sidebar-bg) 0%, var(--pm-sidebar-light) 100%);
+  background-color: var(--pm-sidebar-bg);
   position: relative;
   display: flex;
   align-items: center;
@@ -80,35 +84,60 @@ onMounted(() => siteConfig.fetchConfig())
   margin: 0;
 }
 
-.shape {
+.orb {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.15;
+  opacity: 0.4;
+  animation: float 8s ease-in-out infinite;
+  will-change: transform;
 }
 
-.shape-1 {
+.orb-1 {
+  width: 600px;
+  height: 600px;
+  background: var(--pm-primary);
+  top: -20%;
+  right: -20%;
+  animation-delay: 0s;
+}
+
+.orb-2 {
   width: 400px;
   height: 400px;
-  background: var(--pm-primary);
-  top: -15%;
+  background: var(--pm-secondary);
+  bottom: 0;
   left: -10%;
+  animation-delay: 2s;
 }
 
-.shape-2 {
+.orb-3 {
   width: 300px;
   height: 300px;
-  background: #fff;
-  bottom: -10%;
-  right: -5%;
+  background: #22d3ee;
+  top: 40%;
+  left: 20%;
+  animation-delay: 4s;
 }
 
-.shape-3 {
-  width: 200px;
-  height: 200px;
-  background: var(--pm-secondary);
-  top: 50%;
-  right: 20%;
+html.dark .orb { opacity: 0.2; }
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(79,70,229,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(79,70,229,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+html.dark .grid-overlay {
+  background-image: linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
 }
 
 .form-side {
@@ -118,16 +147,6 @@ onMounted(() => siteConfig.fetchConfig())
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  position: relative;
-}
-
-.top-actions {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .form-container {
@@ -145,6 +164,10 @@ onMounted(() => siteConfig.fetchConfig())
 }
 
 @media (max-width: 768px) {
+  .auth-content {
+    margin-top: 56px;
+  }
+
   .brand-side {
     display: none;
   }

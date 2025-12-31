@@ -1,16 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import DOMPurify from 'dompurify'
-import { useUiStore } from '@/stores/ui'
 import { useSiteConfigStore } from '@/stores/siteConfig'
-import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
-import { Monitor, Message, Timer, ArrowRight, Moon, Sunny } from '@element-plus/icons-vue'
+import PublicHeader from '@/components/common/PublicHeader.vue'
+import { Monitor, Message, Timer, ArrowRight } from '@element-plus/icons-vue'
 
 const { t } = useI18n()
 const router = useRouter()
-const uiStore = useUiStore()
 const siteConfig = useSiteConfigStore()
 
 const features = computed(() => [
@@ -25,34 +23,17 @@ const steps = computed(() => [
   { num: '03', titleKey: 'landing.step3Title', descKey: 'landing.step3Desc' }
 ])
 
-const isScrolled = ref(false)
-const handleScroll = () => { isScrolled.value = window.scrollY > 50 }
-
 const sanitizedSlogan = computed(() => {
   if (!siteConfig.siteSlogan) return ''
   return DOMPurify.sanitize(siteConfig.siteSlogan)
 })
 
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll, { passive: true })
-  siteConfig.fetchConfig()
-})
-onUnmounted(() => window.removeEventListener('scroll', handleScroll))
+onMounted(() => siteConfig.fetchConfig())
 </script>
 
 <template>
   <div class="landing">
-    <nav :class="['nav', { scrolled: isScrolled }]">
-      <div class="container nav-inner">
-        <div class="logo">{{ siteConfig.siteName }}</div>
-        <div class="nav-actions">
-          <LanguageSwitcher />
-          <el-button :icon="uiStore.isDark ? Sunny : Moon" text circle aria-label="Toggle theme" @click="uiStore.toggleTheme" />
-          <router-link to="/login" class="nav-link">{{ t('landing.signIn') }}</router-link>
-          <el-button type="primary" round @click="router.push('/register')">{{ t('landing.getStarted') }}</el-button>
-        </div>
-      </div>
-    </nav>
+    <PublicHeader />
 
     <section class="hero">
       <div class="hero-bg">
@@ -140,15 +121,19 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 
     <footer class="footer">
       <div class="container footer-inner">
-        <div class="footer-brand">
-          <h3>{{ siteConfig.siteName }}</h3>
-          <p>{{ siteConfig.copyright }}</p>
-          <div v-if="sanitizedSlogan" class="footer-slogan" v-html="sanitizedSlogan"></div>
+        <div class="footer-top">
+          <div class="footer-brand">
+            <h3>{{ siteConfig.siteName }}</h3>
+          </div>
+          <div class="footer-links">
+            <a href="#">{{ t('landing.privacy') }}</a>
+            <a href="#">{{ t('landing.terms') }}</a>
+            <a href="#">{{ t('landing.contact') }}</a>
+          </div>
         </div>
-        <div class="footer-links">
-          <a href="#">{{ t('landing.privacy') }}</a>
-          <a href="#">{{ t('landing.terms') }}</a>
-          <a href="#">{{ t('landing.contact') }}</a>
+        <div class="footer-bottom">
+          <div class="copyright">{{ siteConfig.copyright }}</div>
+          <div v-if="sanitizedSlogan" class="footer-slogan" v-html="sanitizedSlogan"></div>
         </div>
       </div>
     </footer>
@@ -167,58 +152,6 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
-}
-
-/* Nav */
-.nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  padding: 1.25rem 0;
-  transition: all 0.3s;
-}
-
-.nav.scrolled {
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(12px);
-  padding: 0.75rem 0;
-  box-shadow: var(--pm-shadow-sm);
-}
-
-html.dark .nav.scrolled {
-  background: rgba(15,23,42,0.9);
-}
-
-.nav-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo {
-  font-weight: 800;
-  font-size: 1.5rem;
-  color: var(--pm-primary);
-  letter-spacing: -0.02em;
-}
-
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.nav-link {
-  color: var(--pm-text-body);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.nav-link:hover {
-  color: var(--pm-primary);
 }
 
 /* Hero */
@@ -593,24 +526,26 @@ html.dark .step-num {
 
 /* Footer */
 .footer {
-  padding: 2.5rem 0;
+  padding: 3rem 0 2rem;
   border-top: 1px solid var(--pm-border-color);
 }
 
 .footer-inner {
   display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.footer-top {
+  display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .footer-brand h3 {
-  font-size: 1.125rem;
-  margin-bottom: 0.25rem;
-}
-
-.footer-brand p {
-  color: var(--pm-text-muted);
-  font-size: 0.875rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
 }
 
 .footer-links {
@@ -622,21 +557,27 @@ html.dark .step-num {
   color: var(--pm-text-body);
   text-decoration: none;
   font-size: 0.875rem;
+  transition: color 0.2s;
 }
 
 .footer-links a:hover {
   color: var(--pm-primary);
 }
 
-.footer-slogan {
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--pm-border-color);
+  font-size: 0.8125rem;
   color: var(--pm-text-muted);
-  font-size: 0.75rem;
-  margin-top: 0.5rem;
 }
 
 .footer-slogan :deep(a) {
-  color: var(--pm-text-body);
+  color: var(--pm-text-muted);
   text-decoration: none;
+  transition: color 0.2s;
 }
 
 .footer-slogan :deep(a:hover) {
@@ -694,10 +635,17 @@ html.dark .step-num {
     grid-template-columns: 1fr;
   }
 
-  .footer-inner {
+  .footer-top {
     flex-direction: column;
     gap: 1.5rem;
     text-align: center;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+    justify-content: center;
   }
 }
 </style>

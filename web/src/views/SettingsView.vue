@@ -7,6 +7,7 @@ import apiClient from '@/api/client'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
+const activeTab = ref('profile')
 const passwordForm = ref({
   current_password: '',
   new_password: '',
@@ -42,56 +43,58 @@ const updatePassword = async () => {
       <h2>{{ t('settings.title') }}</h2>
     </div>
 
-    <el-tabs type="border-card">
-      <el-tab-pane :label="t('settings.profile')">
-        <el-form label-position="top" style="max-width: 400px">
-          <el-form-item :label="t('auth.email')">
-            <el-input :model-value="authStore.user?.email" disabled />
-          </el-form-item>
-        </el-form>
+    <el-card>
+      <el-tabs v-model="activeTab">
+        <el-tab-pane :label="t('settings.profile')" name="profile">
+          <el-form label-position="top" style="max-width: 400px">
+            <el-form-item :label="t('auth.email')">
+              <el-input :model-value="authStore.user?.email" disabled />
+            </el-form-item>
+          </el-form>
 
-        <el-divider />
+          <el-divider />
 
-        <h3>{{ t('settings.changePassword') }}</h3>
-        <el-form
-          :model="passwordForm"
-          label-position="top"
-          style="max-width: 400px"
-          @submit.prevent="updatePassword"
-        >
-          <el-form-item :label="t('settings.currentPassword')">
-            <el-input v-model="passwordForm.current_password" type="password" show-password />
-          </el-form-item>
-          <el-form-item :label="t('settings.newPassword')">
-            <el-input v-model="passwordForm.new_password" type="password" show-password />
-          </el-form-item>
-          <el-form-item :label="t('settings.confirmNewPassword')">
-            <el-input v-model="passwordForm.confirm_password" type="password" show-password />
-          </el-form-item>
-          <el-button type="primary" native-type="submit" :loading="loading">
-            {{ t('settings.updatePassword') }}
-          </el-button>
-        </el-form>
-      </el-tab-pane>
+          <h3>{{ t('settings.changePassword') }}</h3>
+          <el-form
+            :model="passwordForm"
+            label-position="top"
+            style="max-width: 400px"
+            @submit.prevent="updatePassword"
+          >
+            <el-form-item :label="t('settings.currentPassword')">
+              <el-input v-model="passwordForm.current_password" type="password" show-password />
+            </el-form-item>
+            <el-form-item :label="t('settings.newPassword')">
+              <el-input v-model="passwordForm.new_password" type="password" show-password />
+            </el-form-item>
+            <el-form-item :label="t('settings.confirmNewPassword')">
+              <el-input v-model="passwordForm.confirm_password" type="password" show-password />
+            </el-form-item>
+            <el-button type="primary" native-type="submit" :loading="loading">
+              {{ t('settings.updatePassword') }}
+            </el-button>
+          </el-form>
+        </el-tab-pane>
 
-      <el-tab-pane :label="t('settings.smtpConfig')">
-        <div class="config-link">
-          <p>{{ t('settings.smtpDesc') }}</p>
-          <el-button type="primary" @click="$router.push('/settings/smtp')">
-            {{ t('settings.goToSmtp') }}
-          </el-button>
-        </div>
-      </el-tab-pane>
+        <el-tab-pane :label="t('settings.smtpConfig')" name="smtp">
+          <div class="config-link">
+            <p>{{ t('settings.smtpDesc') }}</p>
+            <el-button type="primary" @click="$router.push('/settings/smtp')">
+              {{ t('settings.goToSmtp') }}
+            </el-button>
+          </div>
+        </el-tab-pane>
 
-      <el-tab-pane :label="t('settings.webhooks')">
-        <div class="config-link">
-          <p>{{ t('settings.webhooksDesc') }}</p>
-          <el-button type="primary" @click="$router.push('/settings/webhooks')">
-            {{ t('settings.goToWebhooks') }}
-          </el-button>
-        </div>
-      </el-tab-pane>
-    </el-tabs>
+        <el-tab-pane :label="t('settings.webhooks')" name="webhooks">
+          <div class="config-link">
+            <p>{{ t('settings.webhooksDesc') }}</p>
+            <el-button type="primary" @click="$router.push('/settings/webhooks')">
+              {{ t('settings.goToWebhooks') }}
+            </el-button>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+    </el-card>
   </div>
 </template>
 

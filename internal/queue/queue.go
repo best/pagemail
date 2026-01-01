@@ -394,7 +394,15 @@ func (w *Worker) saveOutput(ctx context.Context, taskID uuid.UUID, format string
 		ext = "png"
 	}
 
-	objectKey := fmt.Sprintf("captures/%s/%s.%s", taskID.String(), format, ext)
+	now := time.Now().UTC()
+	// Path: captures/2025/12/01/20251201123022123456_uuid_format.ext (UTC)
+	timestamp := now.Format("20060102150405") + fmt.Sprintf("%06d", now.Nanosecond()/1000)
+	objectKey := fmt.Sprintf("captures/%s/%s_%s_%s.%s",
+		now.Format("2006/01/02"),
+		timestamp,
+		taskID.String(),
+		format,
+		ext)
 
 	hash := sha256.Sum256(data)
 	hashStr := hex.EncodeToString(hash[:])

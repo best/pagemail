@@ -31,7 +31,15 @@ export const adminApi = {
     return apiClient.put<SiteConfig>('/admin/config/site', data)
   },
 
-  getAuditLogs(params: { page?: number; limit?: number }) {
+  getAuditLogs(params: {
+    page?: number
+    limit?: number
+    action?: string
+    actor?: string
+    resource_type?: string
+    from?: string
+    to?: string
+  }) {
     return apiClient.get<PaginatedResponse<AuditLog>>('/admin/audit-logs', { params })
   }
 }
@@ -43,7 +51,8 @@ export interface AuditLog {
   action: string
   resource_type: string
   resource_id?: string
-  details: Record<string, unknown>
+  details_type?: 'login' | 'resource' | 'change' | 'raw'
+  details: Record<string, unknown> | null
   ip_address: string
   created_at: string
 }

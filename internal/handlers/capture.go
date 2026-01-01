@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
+	"pagemail/internal/audit"
 	"pagemail/internal/models"
 	"pagemail/internal/pkg/errors"
 	"pagemail/internal/queue"
@@ -105,6 +106,10 @@ func (h *Handler) CreateCapture(c *gin.Context) {
 		errors.InternalError("Failed to enqueue job").Respond(c)
 		return
 	}
+
+	h.logAudit(c, audit.ActionCaptureCreate, "capture", &task.ID, audit.ResourceDetails{
+		URL: task.URL, Formats: req.Formats,
+	})
 
 	c.JSON(http.StatusCreated, gin.H{
 		"id":         task.ID,
@@ -260,6 +265,8 @@ func (h *Handler) DeleteCapture(c *gin.Context) {
 		errors.InternalError("Failed to delete task").Respond(c)
 		return
 	}
+
+	h.logAudit(c, audit.ActionCaptureDelete, "capture", &task.ID, audit.ResourceDetails{URL: task.URL})
 
 	c.JSON(http.StatusOK, gin.H{"message": "Capture task deleted"})
 }

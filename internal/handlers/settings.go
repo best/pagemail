@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
+	"pagemail/internal/audit"
 	"pagemail/internal/models"
 	"pagemail/internal/pkg/crypto"
 	"pagemail/internal/pkg/errors"
@@ -103,6 +104,10 @@ func (h *Handler) CreateSMTPProfile(c *gin.Context) {
 		return
 	}
 
+	h.logAudit(c, audit.ActionSMTPCreate, "smtp_profile", &profile.ID, audit.ResourceDetails{
+		Name: profile.Name, Host: profile.Host, Port: profile.Port,
+	})
+
 	c.JSON(http.StatusCreated, gin.H{
 		"id":         profile.ID,
 		"name":       profile.Name,
@@ -158,6 +163,10 @@ func (h *Handler) UpdateSMTPProfile(c *gin.Context) {
 		return
 	}
 
+	h.logAudit(c, audit.ActionSMTPUpdate, "smtp_profile", &profile.ID, audit.ResourceDetails{
+		Name: profile.Name, Host: profile.Host, Port: profile.Port,
+	})
+
 	c.JSON(http.StatusOK, gin.H{
 		"id":         profile.ID,
 		"name":       profile.Name,
@@ -177,11 +186,18 @@ func (h *Handler) DeleteSMTPProfile(c *gin.Context) {
 	userID := c.GetString("user_id")
 	uid, _ := uuid.Parse(userID)
 
-	result := h.db.Where("id = ? AND user_id = ?", profileID, &uid).Delete(&models.SMTPProfile{})
-	if result.RowsAffected == 0 {
+	var profile models.SMTPProfile
+	if err := h.db.Where("id = ? AND user_id = ?", profileID, &uid).First(&profile).Error; err != nil {
 		errors.NotFound("SMTP profile not found").Respond(c)
 		return
 	}
+
+	if err := h.db.Delete(&profile).Error; err != nil {
+		errors.InternalError("Failed to delete SMTP profile").Respond(c)
+		return
+	}
+
+	h.logAudit(c, audit.ActionSMTPDelete, "smtp_profile", &profile.ID, audit.ResourceDetails{Name: profile.Name})
 
 	c.JSON(http.StatusOK, gin.H{"message": "SMTP profile deleted"})
 }
@@ -271,6 +287,10 @@ func (h *Handler) CreateWebhook(c *gin.Context) {
 		return
 	}
 
+	h.logAudit(c, audit.ActionWebhookCreate, "webhook", &webhook.ID, audit.ResourceDetails{
+		Name: webhook.Name, IsActive: audit.BoolPtr(webhook.IsActive),
+	})
+
 	c.JSON(http.StatusCreated, gin.H{
 		"id":         webhook.ID,
 		"name":       webhook.Name,
@@ -312,6 +332,10 @@ func (h *Handler) UpdateWebhook(c *gin.Context) {
 		return
 	}
 
+	h.logAudit(c, audit.ActionWebhookUpdate, "webhook", &webhook.ID, audit.ResourceDetails{
+		Name: webhook.Name, IsActive: audit.BoolPtr(webhook.IsActive),
+	})
+
 	c.JSON(http.StatusOK, gin.H{
 		"id":         webhook.ID,
 		"name":       webhook.Name,
@@ -326,11 +350,18 @@ func (h *Handler) DeleteWebhook(c *gin.Context) {
 	userID := c.GetString("user_id")
 	uid, _ := uuid.Parse(userID)
 
-	result := h.db.Where("id = ? AND user_id = ?", webhookID, uid).Delete(&models.WebhookEndpoint{})
-	if result.RowsAffected == 0 {
+	var webhook models.WebhookEndpoint
+	if err := h.db.Where("id = ? AND user_id = ?", webhookID, uid).First(&webhook).Error; err != nil {
 		errors.NotFound("Webhook not found").Respond(c)
 		return
 	}
+
+	if err := h.db.Delete(&webhook).Error; err != nil {
+		errors.InternalError("Failed to delete webhook").Respond(c)
+		return
+	}
+
+	h.logAudit(c, audit.ActionWebhookDelete, "webhook", &webhook.ID, audit.ResourceDetails{Name: webhook.Name})
 
 	c.JSON(http.StatusOK, gin.H{"message": "Webhook deleted"})
 }

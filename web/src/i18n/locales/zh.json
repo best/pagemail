@@ -13,7 +13,15 @@
     "download": "下载",
     "logout": "退出登录",
     "viewAll": "查看全部",
-    "preview": "预览"
+    "preview": "预览",
+    "export": "导出",
+    "search": "搜索",
+    "reset": "重置",
+    "select": "请选择",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "fetchError": "加载数据失败",
+    "actions": "操作"
   },
   "nav": {
     "dashboard": "仪表盘",
@@ -241,7 +249,27 @@
       "action": "操作",
       "resource": "资源",
       "ip": "IP 地址",
-      "details": "详情"
+      "details": "详情",
+      "viewDetails": "查看详情",
+      "changeDetails": "变更详情",
+      "noDetails": "无详细信息",
+      "loginSuccess": "登录成功",
+      "userAgent": "用户代理",
+      "actionTypes": {
+        "user_login": "用户登录",
+        "user_create": "创建用户",
+        "user_update": "更新用户",
+        "user_delete": "删除用户",
+        "settings_update": "更新设置",
+        "smtp_create": "创建 SMTP",
+        "smtp_update": "更新 SMTP",
+        "smtp_delete": "删除 SMTP",
+        "webhook_create": "创建 Webhook",
+        "webhook_update": "更新 Webhook",
+        "webhook_delete": "删除 Webhook",
+        "capture_create": "创建截图任务",
+        "capture_delete": "删除截图任务"
+      }
     },
     "systemConfig": {
       "title": "系统配置",

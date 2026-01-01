@@ -2,12 +2,16 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
+	"pagemail/internal/audit"
 	"pagemail/internal/models"
 	"pagemail/internal/pkg/errors"
 )
@@ -77,6 +81,9 @@ func (h *Handler) AdminUpdateUser(c *gin.Context) {
 		return
 	}
 
+	oldRole := user.Role
+	oldIsActive := user.IsActive
+
 	if req.Role != nil {
 		if *req.Role != "admin" && *req.Role != "user" {
 			errors.BadRequest("Invalid role").Respond(c)
@@ -93,6 +100,25 @@ func (h *Handler) AdminUpdateUser(c *gin.Context) {
 		errors.InternalError("Failed to update user").Respond(c)
 		return
 	}
+
+	changes := make([]audit.ChangeDetails, 0, 2)
+	if req.Role != nil && oldRole != user.Role {
+		changes = append(changes, audit.ChangeDetails{
+			Field:    "role",
+			OldValue: oldRole,
+			NewValue: user.Role,
+		})
+	}
+	if req.IsActive != nil && oldIsActive != user.IsActive {
+		changes = append(changes, audit.ChangeDetails{
+			Field:    "is_active",
+			OldValue: strconv.FormatBool(oldIsActive),
+			NewValue: strconv.FormatBool(user.IsActive),
+		})
+	}
+	h.logAudit(c, audit.ActionUserUpdate, "user", &user.ID, audit.ChangeSetDetails{
+		Changes: changes,
+	})
 
 	c.JSON(http.StatusOK, gin.H{
 		"id":        user.ID,
@@ -111,11 +137,18 @@ func (h *Handler) AdminDeleteUser(c *gin.Context) {
 		return
 	}
 
-	result := h.db.Delete(&models.User{}, "id = ?", userID)
-	if result.RowsAffected == 0 {
+	var user models.User
+	if err := h.db.First(&user, "id = ?", userID).Error; err != nil {
 		errors.NotFound("User not found").Respond(c)
 		return
 	}
+
+	if err := h.db.Delete(&user).Error; err != nil {
+		errors.InternalError("Failed to delete user").Respond(c)
+		return
+	}
+
+	h.logAudit(c, audit.ActionUserDelete, "user", &user.ID, audit.ResourceDetails{Email: user.Email})
 
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted"})
 }
@@ -126,11 +159,42 @@ func (h *Handler) ListAuditLogs(c *gin.Context) {
 	var logs []models.AuditLog
 	var total int64
 
-	h.db.Model(&models.AuditLog{}).Count(&total)
-	h.db.Order("created_at DESC").Offset((page - 1) * limit).Limit(limit).Find(&logs)
+	query := h.db.Model(&models.AuditLog{})
+
+	if action := c.Query("action"); action != "" {
+		query = query.Where("action = ?", action)
+	}
+	if resourceType := c.Query("resource_type"); resourceType != "" {
+		query = query.Where("resource_type = ?", resourceType)
+	}
+	if actor := c.Query("actor"); actor != "" {
+		if id, err := uuid.Parse(actor); err == nil {
+			query = query.Where("actor_id = ?", id)
+		} else {
+			query = query.Where("LOWER(actor_email) LIKE ?", "%"+strings.ToLower(actor)+"%")
+		}
+	}
+	if from := c.Query("from"); from != "" {
+		if t, err := time.Parse(time.RFC3339, from); err == nil {
+			query = query.Where("created_at >= ?", t)
+		} else if t, err := time.Parse("2006-01-02", from); err == nil {
+			query = query.Where("created_at >= ?", t)
+		}
+	}
+	if to := c.Query("to"); to != "" {
+		if t, err := time.Parse(time.RFC3339, to); err == nil {
+			query = query.Where("created_at <= ?", t)
+		} else if t, err := time.Parse("2006-01-02", to); err == nil {
+			query = query.Where("created_at <= ?", t.Add(24*time.Hour-time.Second))
+		}
+	}
+
+	query.Count(&total)
+	query.Order("created_at DESC").Offset((page - 1) * limit).Limit(limit).Find(&logs)
 
 	result := make([]gin.H, len(logs))
 	for i := range logs {
+		detailsType, details := audit.NormalizeDetails(logs[i].Action, logs[i].Details, logs[i].UserAgent)
 		result[i] = gin.H{
 			"id":            logs[i].ID,
 			"actor_id":      logs[i].ActorID,
@@ -138,7 +202,8 @@ func (h *Handler) ListAuditLogs(c *gin.Context) {
 			"action":        logs[i].Action,
 			"resource_type": logs[i].ResourceType,
 			"resource_id":   logs[i].ResourceID,
-			"details":       logs[i].Details,
+			"details_type":  detailsType,
+			"details":       details,
 			"ip_address":    logs[i].IPAddress,
 			"created_at":    logs[i].CreatedAt,
 		}
@@ -266,6 +331,8 @@ func (h *Handler) UpdateSiteConfig(c *gin.Context) {
 		errors.InternalError("Failed to update site config").Respond(c)
 		return
 	}
+
+	h.logAudit(c, audit.ActionSettingsUpdate, "site_config", nil, req)
 
 	config, err := h.loadSiteConfig()
 	if err != nil {

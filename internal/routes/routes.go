@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"pagemail/internal/audit"
 	"pagemail/internal/config"
 	"pagemail/internal/handlers"
 	"pagemail/internal/middleware"
@@ -18,7 +19,8 @@ func Setup(cfg *config.Config, db *gorm.DB, store storage.Storage) *gin.Engine {
 	r.Use(middleware.CORS(cfg))
 	r.Use(middleware.TraceID())
 
-	h := handlers.New(cfg, db, store)
+	auditLogger := audit.NewLogger(db)
+	h := handlers.New(cfg, db, store, auditLogger)
 
 	v1 := r.Group("/v1")
 	v1.GET("/health", h.Health)

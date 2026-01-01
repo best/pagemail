@@ -3,23 +3,26 @@ module pagemail
 go 1.23
 
 require (
+	github.com/aws/aws-sdk-go-v2 v1.41.0
+	github.com/aws/aws-sdk-go-v2/config v1.32.6
+	github.com/aws/aws-sdk-go-v2/credentials v1.19.6
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.95.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.22.0
+	github.com/go-rod/rod v0.116.2
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0
 	golang.org/x/crypto v0.28.0
+	golang.org/x/net v0.25.0
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.12
 )
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.41.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.4 // indirect
-	github.com/aws/aws-sdk-go-v2/config v1.32.6 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.19.6 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.16 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.16 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.16 // indirect
@@ -29,7 +32,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.7 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.16 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.16 // indirect
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.95.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/signin v1.0.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.12 // indirect
@@ -44,7 +46,6 @@ require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-rod/rod v0.116.2 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -83,7 +84,6 @@ require (
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
-	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect

@@ -11,6 +11,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
+	"pagemail/internal/audit"
 	"pagemail/internal/config"
 	"pagemail/internal/models"
 	"pagemail/internal/storage"
@@ -60,7 +61,8 @@ func setupTestHandler(t *testing.T) (*Handler, *gin.Engine) {
 		t.Fatalf("Failed to create test storage: %v", err)
 	}
 
-	h := New(cfg, db, store)
+	auditLogger := audit.NewLogger(db)
+	h := New(cfg, db, store, auditLogger)
 	r := gin.New()
 
 	return h, r

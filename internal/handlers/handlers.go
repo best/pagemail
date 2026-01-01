@@ -7,9 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
+	"pagemail/internal/audit"
 	"pagemail/internal/config"
 	"pagemail/internal/middleware"
 	"pagemail/internal/models"
@@ -17,9 +19,10 @@ import (
 )
 
 type Handler struct {
-	cfg     *config.Config
-	db      *gorm.DB
-	storage storage.Storage
+	cfg         *config.Config
+	db          *gorm.DB
+	storage     storage.Storage
+	auditLogger *audit.Logger
 }
 
 var siteConfigDefaults = map[string]string{
@@ -27,8 +30,17 @@ var siteConfigDefaults = map[string]string{
 	"site_slogan": "",
 }
 
-func New(cfg *config.Config, db *gorm.DB, store storage.Storage) *Handler {
-	return &Handler{cfg: cfg, db: db, storage: store}
+func New(cfg *config.Config, db *gorm.DB, store storage.Storage, auditLogger *audit.Logger) *Handler {
+	return &Handler{cfg: cfg, db: db, storage: store, auditLogger: auditLogger}
+}
+
+func (h *Handler) logAudit(c *gin.Context, action, resourceType string, resourceID *uuid.UUID, details interface{}) {
+	if h.auditLogger == nil {
+		return
+	}
+	if err := h.auditLogger.LogFromContext(c, action, resourceType, resourceID, details); err != nil {
+		log.Warn().Err(err).Str("action", action).Msg("audit log failed")
+	}
 }
 
 func (h *Handler) Health(c *gin.Context) {
@@ -112,6 +124,20 @@ func (h *Handler) Register(c *gin.Context) {
 		return
 	}
 
+	if h.auditLogger != nil {
+		_ = h.auditLogger.Log(&audit.LogEntry{
+			ActorID:      &user.ID,
+			ActorEmail:   user.Email,
+			Action:       audit.ActionUserCreate,
+			ResourceType: "user",
+			ResourceID:   &user.ID,
+			Details:      audit.ResourceDetails{Email: user.Email, Role: user.Role},
+			IPAddress:    c.ClientIP(),
+			UserAgent:    c.Request.UserAgent(),
+			TraceID:      c.GetString("trace_id"),
+		})
+	}
+
 	c.JSON(http.StatusCreated, gin.H{
 		"id":    user.ID,
 		"email": user.Email,
@@ -170,6 +196,20 @@ func (h *Handler) Login(c *gin.Context) {
 	now := time.Now()
 	user.LastLoginAt = &now
 	h.db.Save(&user)
+
+	if h.auditLogger != nil {
+		_ = h.auditLogger.Log(&audit.LogEntry{
+			ActorID:      &user.ID,
+			ActorEmail:   user.Email,
+			Action:       audit.ActionUserLogin,
+			ResourceType: "user",
+			ResourceID:   &user.ID,
+			Details:      audit.LoginDetails{UserAgent: c.Request.UserAgent()},
+			IPAddress:    c.ClientIP(),
+			UserAgent:    c.Request.UserAgent(),
+			TraceID:      c.GetString("trace_id"),
+		})
+	}
 
 	accessToken, err := h.generateToken(&user, h.cfg.JWT.AccessExpiry)
 	if err != nil {

@@ -56,17 +56,22 @@ func (l *Logger) Log(entry *LogEntry) error {
 
 func (l *Logger) LogFromContext(c *gin.Context, action, resourceType string, resourceID *uuid.UUID, details interface{}) error {
 	var actorID *uuid.UUID
-	if userIDStr, exists := c.Get("user_id"); exists {
-		if id, err := uuid.Parse(userIDStr.(string)); err == nil {
-			actorID = &id
+	if userIDVal, exists := c.Get("user_id"); exists {
+		if userIDStr, ok := userIDVal.(string); ok {
+			if id, err := uuid.Parse(userIDStr); err == nil {
+				actorID = &id
+			}
 		}
 	}
 
-	actorEmail, _ := c.Get("user_email")
+	var actorEmail string
+	if v, ok := c.Get("user_email"); ok {
+		actorEmail, _ = v.(string)
+	}
 
 	entry := &LogEntry{
 		ActorID:      actorID,
-		ActorEmail:   actorEmail.(string),
+		ActorEmail:   actorEmail,
 		Action:       action,
 		ResourceType: resourceType,
 		ResourceID:   resourceID,

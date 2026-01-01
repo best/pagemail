@@ -13,7 +13,15 @@
     "download": "Download",
     "logout": "Logout",
     "viewAll": "View All",
-    "preview": "Preview"
+    "preview": "Preview",
+    "export": "Export",
+    "search": "Search",
+    "reset": "Reset",
+    "select": "Select",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "fetchError": "Failed to fetch data",
+    "actions": "Actions"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -241,7 +249,27 @@
       "action": "Action",
       "resource": "Resource",
       "ip": "IP",
-      "details": "Details"
+      "details": "Details",
+      "viewDetails": "View Details",
+      "changeDetails": "Change Details",
+      "noDetails": "No additional details",
+      "loginSuccess": "Login successful",
+      "userAgent": "User Agent",
+      "actionTypes": {
+        "user_login": "User Login",
+        "user_create": "Create User",
+        "user_update": "Update User",
+        "user_delete": "Delete User",
+        "settings_update": "Update Settings",
+        "smtp_create": "Create SMTP",
+        "smtp_update": "Update SMTP",
+        "smtp_delete": "Delete SMTP",
+        "webhook_create": "Create Webhook",
+        "webhook_update": "Update Webhook",
+        "webhook_delete": "Delete Webhook",
+        "capture_create": "Create Capture",
+        "capture_delete": "Delete Capture"
+      }
     },
     "systemConfig": {
       "title": "System Configuration",

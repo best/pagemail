@@ -8,7 +8,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Download, Refresh, Delete, Back } from '@element-plus/icons-vue'
 import { usePolling } from '@/composables/usePolling'
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const task = ref<Task | null>(null)
@@ -81,6 +81,11 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
   }
   return map[status] || 'info'
 }
+
+const formatLabel = (format: string): string => {
+  const key = `taskCreate.${format}`
+  return te(key) ? t(key) : format
+}
 </script>
 
 <template>
@@ -111,7 +116,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
             <el-descriptions-item :label="t('tasks.created')">
               {{ new Date(task.created_at).toLocaleString() }}
             </el-descriptions-item>
-            <el-descriptions-item :label="t('tasks.formats')">{{ task.formats.join(', ') }}</el-descriptions-item>
+            <el-descriptions-item :label="t('tasks.formats')">{{ task.formats.map(formatLabel).join(', ') }}</el-descriptions-item>
             <el-descriptions-item v-if="task.error_message" :label="t('taskDetail.error')">
               <span class="text-danger">{{ task.error_message }}</span>
             </el-descriptions-item>
@@ -129,7 +134,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
           <template #header><span>{{ t('taskDetail.generatedOutputs') }}</span></template>
           <el-table :data="task.outputs" stripe style="width: 100%">
             <el-table-column prop="format" :label="t('taskDetail.format')" width="100">
-              <template #default="{ row }">{{ row.format.toUpperCase() }}</template>
+              <template #default="{ row }">{{ formatLabel(row.format) }}</template>
             </el-table-column>
             <el-table-column prop="size" :label="t('taskDetail.size')">
               <template #default="{ row }">{{ (row.size / 1024).toFixed(1) }} KB</template>

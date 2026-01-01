@@ -8,7 +8,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { View, Refresh, Delete, Plus } from '@element-plus/icons-vue'
 import { usePolling } from '@/composables/usePolling'
 
-const { t } = useI18n()
+const { t, te } = useI18n()
 const router = useRouter()
 const tasks = ref<Task[]>([])
 const total = ref(0)
@@ -83,6 +83,11 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
   return map[status] || 'info'
 }
 
+const formatLabel = (format: string): string => {
+  const key = `taskCreate.${format}`
+  return te(key) ? t(key) : format
+}
+
 watch(() => query.status, () => {
   query.page = 1
   fetchTasks()
@@ -124,7 +129,7 @@ watch(() => query.status, () => {
       </el-table-column>
       <el-table-column :label="t('tasks.formats')" width="150">
         <template #default="{ row }">
-          <el-tag v-for="fmt in row.formats" :key="fmt" size="small" class="mr-1">{{ fmt }}</el-tag>
+          <el-tag v-for="fmt in row.formats" :key="fmt" size="small" class="mr-1">{{ formatLabel(fmt) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column :label="t('tasks.created')" width="180">

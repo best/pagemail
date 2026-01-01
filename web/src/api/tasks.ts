@@ -40,5 +40,12 @@ export const tasksApi = {
     link.click()
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
+  },
+
+  async previewOutput(taskId: string, outputId: string): Promise<Blob> {
+    const response = await apiClient.get(`/captures/${taskId}/outputs/${outputId}/preview`, {
+      responseType: 'blob'
+    })
+    return response.data as Blob
   }
 }

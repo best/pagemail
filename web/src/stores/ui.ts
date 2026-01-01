@@ -13,6 +13,10 @@ export const useUiStore = defineStore('ui', () => {
     i18n.global.locale.value = newLang
   }, { immediate: true })
 
+  watch(sidebarCollapsed, (collapsed) => {
+    document.documentElement.style.setProperty('--pm-sidebar-width', collapsed ? '64px' : '220px')
+  }, { immediate: true })
+
   function toggleSidebar() {
     sidebarCollapsed.value = !sidebarCollapsed.value
   }

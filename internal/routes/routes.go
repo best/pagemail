@@ -46,6 +46,7 @@ func Setup(cfg *config.Config, db *gorm.DB, store storage.Storage) *gin.Engine {
 	captures.DELETE("/:id", h.DeleteCapture)
 	captures.GET("/:id/outputs", h.ListCaptureOutputs)
 	captures.GET("/:id/outputs/:oid/download", h.DownloadOutput)
+	captures.GET("/:id/outputs/:oid/preview", h.PreviewOutput)
 	captures.POST("/:id/deliver", h.DeliverCapture)
 
 	deliveries := v1.Group("/deliveries")

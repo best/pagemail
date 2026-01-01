@@ -12,7 +12,8 @@
     "retry": "Retry",
     "download": "Download",
     "logout": "Logout",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "preview": "Preview"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -150,7 +151,8 @@
     "noDelivery": "No delivery attempts",
     "retryInitiated": "Retry initiated",
     "deleteTask": "Delete this task?",
-    "downloadFailed": "Download failed"
+    "downloadFailed": "Download failed",
+    "previewFailed": "Preview failed"
   },
   "settings": {
     "title": "Settings",

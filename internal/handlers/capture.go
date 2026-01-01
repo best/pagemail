@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -319,6 +320,62 @@ func (h *Handler) DownloadOutput(c *gin.Context) {
 	c.Header("Content-Disposition", "attachment; filename="+output.Format+getExtension(output.Format))
 	c.Header("Content-Length", fmt.Sprintf("%d", info.Size))
 	c.DataFromReader(http.StatusOK, info.Size, output.ContentType, reader, nil)
+}
+
+func (h *Handler) PreviewOutput(c *gin.Context) {
+	taskID := c.Param("id")
+	outputID := c.Param("oid")
+	userID := c.GetString("user_id")
+	uid, _ := uuid.Parse(userID)
+
+	var task models.CaptureTask
+	if err := h.db.Where("id = ? AND user_id = ?", taskID, uid).First(&task).Error; err != nil {
+		errors.NotFound("Capture task not found").Respond(c)
+		return
+	}
+
+	var output models.CaptureOutput
+	if err := h.db.Where("id = ? AND task_id = ?", outputID, task.ID).First(&output).Error; err != nil {
+		errors.NotFound("Output not found").Respond(c)
+		return
+	}
+
+	if output.Format != formatPDF && output.Format != formatScreenshot {
+		errors.NewProblemDetail(http.StatusUnsupportedMediaType, "Unsupported Media Type", "Preview is only supported for PDF and screenshot formats").Respond(c)
+		return
+	}
+
+	reader, info, err := h.storage.Download(c, output.ObjectKey)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			errors.NotFound("File not found in storage").Respond(c)
+		} else {
+			errors.InternalError("Failed to download file").Respond(c)
+		}
+		return
+	}
+	defer reader.Close()
+
+	contentType := getContentType(output.Format)
+	c.Header("Content-Type", contentType)
+	c.Header("Content-Disposition", "inline; filename="+output.Format+getExtension(output.Format))
+	c.Header("Content-Length", fmt.Sprintf("%d", info.Size))
+	c.Header("X-Content-Type-Options", "nosniff")
+	c.Header("Cache-Control", "private, no-cache, no-store, max-age=0, must-revalidate")
+	c.Header("Pragma", "no-cache")
+	c.Header("Expires", "0")
+	c.DataFromReader(http.StatusOK, info.Size, contentType, reader, nil)
+}
+
+func getContentType(format string) string {
+	switch format {
+	case formatPDF:
+		return "application/pdf"
+	case formatScreenshot:
+		return "image/png"
+	default:
+		return "application/octet-stream"
+	}
 }
 
 func getExtension(format string) string {

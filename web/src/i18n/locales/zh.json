@@ -12,7 +12,8 @@
     "retry": "重试",
     "download": "下载",
     "logout": "退出登录",
-    "viewAll": "查看全部"
+    "viewAll": "查看全部",
+    "preview": "预览"
   },
   "nav": {
     "dashboard": "仪表盘",
@@ -150,7 +151,8 @@
     "noDelivery": "暂无交付记录",
     "retryInitiated": "已发起重试",
     "deleteTask": "确定删除此任务？",
-    "downloadFailed": "下载失败"
+    "downloadFailed": "下载失败",
+    "previewFailed": "预览失败"
   },
   "settings": {
     "title": "设置",

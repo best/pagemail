@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { tasksApi } from '@/api/tasks'
 import type { Task } from '@/types/task'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Download, Refresh, Delete, Back } from '@element-plus/icons-vue'
+import { Download, Refresh, Delete, Back, View, Close } from '@element-plus/icons-vue'
 import { usePolling } from '@/composables/usePolling'
 
 const { t, te } = useI18n()
@@ -14,6 +14,12 @@ const router = useRouter()
 const task = ref<Task | null>(null)
 const loading = ref(true)
 const lastRefreshed = ref<Date>(new Date())
+
+const previewVisible = ref(false)
+const previewUrl = ref('')
+const previewFormat = ref<'pdf' | 'png'>('png')
+const previewLoading = ref(false)
+const previewRequestId = ref(0)
 
 const fetchTask = async () => {
   const isInitialLoad = !task.value
@@ -71,6 +77,42 @@ const handleDownload = async (outputId: string, format: string) => {
     ElMessage.error(t('taskDetail.downloadFailed'))
   }
 }
+
+const handlePreview = async (outputId: string, format: string) => {
+  if (!task.value || (format !== 'pdf' && format !== 'screenshot')) return
+
+  const currentRequestId = ++previewRequestId.value
+  previewFormat.value = format === 'pdf' ? 'pdf' : 'png'
+  previewVisible.value = true
+  previewLoading.value = true
+
+  try {
+    const blob = await tasksApi.previewOutput(task.value.id, outputId)
+    if (!previewVisible.value || currentRequestId !== previewRequestId.value) return
+    if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+    previewUrl.value = URL.createObjectURL(blob)
+  } catch {
+    if (previewVisible.value && currentRequestId === previewRequestId.value) {
+      ElMessage.error(t('taskDetail.previewFailed'))
+      previewVisible.value = false
+    }
+  } finally {
+    if (currentRequestId === previewRequestId.value) {
+      previewLoading.value = false
+    }
+  }
+}
+
+const handlePreviewClose = () => {
+  if (previewUrl.value) {
+    URL.revokeObjectURL(previewUrl.value)
+    previewUrl.value = ''
+  }
+}
+
+onUnmounted(() => {
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+})
 
 const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info' => {
   const map: Record<string, 'success' | 'danger' | 'warning' | 'info'> = {
@@ -139,8 +181,16 @@ const formatLabel = (format: string): string => {
             <el-table-column prop="size" :label="t('taskDetail.size')">
               <template #default="{ row }">{{ (row.size / 1024).toFixed(1) }} KB</template>
             </el-table-column>
-            <el-table-column align="right">
+            <el-table-column align="right" width="220">
               <template #default="{ row }">
+                <el-button
+                  v-if="row.format === 'pdf' || row.format === 'screenshot'"
+                  size="small"
+                  :icon="View"
+                  @click="handlePreview(row.id, row.format)"
+                >
+                  {{ t('common.preview') }}
+                </el-button>
                 <el-button size="small" :icon="Download" @click="handleDownload(row.id, row.format)">
                   {{ t('common.download') }}
                 </el-button>
@@ -169,6 +219,38 @@ const formatLabel = (format: string): string => {
         </el-card>
       </el-col>
     </el-row>
+
+    <el-dialog
+      v-model="previewVisible"
+      class="preview-dialog"
+      width="calc((100vw - var(--pm-sidebar-width, 220px)) * 0.8)"
+      destroy-on-close
+      align-center
+      :append-to-body="false"
+      :show-close="false"
+      @closed="handlePreviewClose"
+    >
+      <template #header="{ close }">
+        <div class="preview-header">
+          <span class="preview-title">{{ t('common.preview') }}</span>
+          <el-button circle :icon="Close" size="small" @click="close" />
+        </div>
+      </template>
+      <div v-loading="previewLoading" class="preview-content">
+        <iframe
+          v-if="!previewLoading && previewFormat === 'pdf'"
+          :src="previewUrl"
+          :title="t('common.preview')"
+          class="preview-iframe"
+        />
+        <img
+          v-else-if="!previewLoading && previewFormat === 'png'"
+          :src="previewUrl"
+          :alt="t('common.preview')"
+          class="preview-image"
+        />
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -210,5 +292,71 @@ const formatLabel = (format: string): string => {
 }
 .mb-4 {
   margin-bottom: 16px;
+}
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.preview-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+.preview-content {
+  min-height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--el-fill-color-light);
+  border-radius: 4px;
+}
+.preview-iframe {
+  width: 100%;
+  height: 70vh;
+  border: none;
+  border-radius: 4px;
+}
+.preview-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  box-shadow: var(--el-box-shadow-light);
+  border-radius: 4px;
+}
+</style>
+
+<style>
+/* Overlay constrained to main content area via --pm-sidebar-width CSS variable */
+.task-detail .el-overlay,
+.task-detail .el-overlay-dialog {
+  left: var(--pm-sidebar-width, 220px);
+  right: 0;
+  width: auto;
+}
+/* Reset overlay position for mobile devices */
+@media (max-width: 768px) {
+  .task-detail .el-overlay,
+  .task-detail .el-overlay-dialog {
+    left: 0;
+  }
+  .el-dialog.preview-dialog {
+    width: 95% !important;
+  }
+}
+.el-dialog.preview-dialog {
+  --el-dialog-bg-color: var(--el-bg-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.el-dialog.preview-dialog .el-dialog__header {
+  margin: 0;
+  padding: 16px 20px;
+  background-color: var(--el-bg-color);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+.el-dialog.preview-dialog .el-dialog__body {
+  padding: 16px !important;
 }
 </style>

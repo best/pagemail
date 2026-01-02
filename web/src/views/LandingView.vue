@@ -464,12 +464,14 @@ html.dark .feature-icon {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
-  margin-top: 3rem;
+  margin: 3rem auto 0;
+  max-width: 960px;
 }
 
 .step {
   position: relative;
   padding: 1.5rem;
+  text-align: center;
 }
 
 .step-num {

@@ -7,8 +7,10 @@ import type { Task } from '@/types/task'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Download, Refresh, Delete, Back, View, Close } from '@element-plus/icons-vue'
 import { usePolling } from '@/composables/usePolling'
+import { useStatusFormatter } from '@/composables/useStatusFormatter'
 
 const { t, te } = useI18n()
+const { formatStatus } = useStatusFormatter()
 const route = useRoute()
 const router = useRouter()
 const task = ref<Task | null>(null)
@@ -44,30 +46,6 @@ const { isRunning, stop: stopPolling } = usePolling(fetchTask, {
   intervalMs: 10000,
   pendingIntervalMs: 5000,
   isPending: () => isPendingTask.value
-})
-
-const statusDisplay = computed(() => {
-  if (!task.value) return ''
-  const { status, attempts, max_attempts } = task.value
-
-  switch (status) {
-    case 'pending':
-      if (attempts > 0) {
-        return t('taskDetail.waitingRetry', { attempt: attempts, max: max_attempts })
-      }
-      return t('taskDetail.pending')
-    case 'running':
-      if (attempts > 1) {
-        return t('taskDetail.retrying', { attempt: attempts, max: max_attempts })
-      }
-      return t('taskDetail.processing')
-    case 'failed':
-      return t('taskDetail.failed')
-    case 'completed':
-      return t('taskDetail.completed')
-    default:
-      return status
-  }
 })
 
 const showError = computed(() => {
@@ -177,7 +155,7 @@ const formatLabel = (format: string): string => {
           <template #header>
             <div class="card-header">
               <span>{{ t('taskDetail.taskInfo') }}</span>
-              <el-tag :type="getStatusType(task.status)">{{ statusDisplay }}</el-tag>
+              <el-tag :type="getStatusType(task.status)">{{ formatStatus(task) }}</el-tag>
             </div>
           </template>
           <el-descriptions :column="1" border>

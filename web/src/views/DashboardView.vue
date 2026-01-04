@@ -6,8 +6,10 @@ import { tasksApi } from '@/api/tasks'
 import type { Task } from '@/types/task'
 import { Document, Finished, Warning, Plus, Refresh } from '@element-plus/icons-vue'
 import { usePolling } from '@/composables/usePolling'
+import { useStatusFormatter } from '@/composables/useStatusFormatter'
 
 const { t } = useI18n()
+const { formatStatus } = useStatusFormatter()
 const authStore = useAuthStore()
 const tasks = ref<Task[]>([])
 const loading = ref(true)
@@ -151,7 +153,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
         <el-table-column prop="url" :label="t('tasks.url')" show-overflow-tooltip />
         <el-table-column prop="status" :label="t('tasks.status')" width="120">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)" effect="light" round>{{ row.status }}</el-tag>
+            <el-tag :type="getStatusType(row.status)" effect="light" round>{{ formatStatus(row) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="created_at" :label="t('tasks.created')" width="180">

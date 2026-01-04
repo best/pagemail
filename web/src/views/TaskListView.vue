@@ -7,8 +7,10 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { View, Refresh, Delete, Plus } from '@element-plus/icons-vue'
 import { usePolling } from '@/composables/usePolling'
+import { useStatusFormatter } from '@/composables/useStatusFormatter'
 
 const { t, te } = useI18n()
+const { formatStatus } = useStatusFormatter()
 const router = useRouter()
 const tasks = ref<Task[]>([])
 const total = ref(0)
@@ -124,7 +126,7 @@ watch(() => query.status, () => {
       </el-table-column>
       <el-table-column :label="t('tasks.status')" width="100">
         <template #default="{ row }">
-          <el-tag :type="getStatusType(row.status)" size="small">{{ row.status }}</el-tag>
+          <el-tag :type="getStatusType(row.status)" size="small">{{ formatStatus(row) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column :label="t('tasks.formats')" width="150">

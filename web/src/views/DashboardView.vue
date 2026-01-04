@@ -153,7 +153,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
         <el-table-column prop="url" :label="t('tasks.url')" show-overflow-tooltip />
         <el-table-column prop="status" :label="t('tasks.status')" width="120">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)" effect="light" round>{{ formatStatus(row) }}</el-tag>
+            <el-tag :type="getStatusType(row.status)" effect="light" round>{{ formatStatus(row, true) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="created_at" :label="t('tasks.created')" width="180">

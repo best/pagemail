@@ -126,7 +126,7 @@ watch(() => query.status, () => {
       </el-table-column>
       <el-table-column :label="t('tasks.status')" width="100">
         <template #default="{ row }">
-          <el-tag :type="getStatusType(row.status)" size="small">{{ formatStatus(row) }}</el-tag>
+          <el-tag :type="getStatusType(row.status)" size="small">{{ formatStatus(row, true) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column :label="t('tasks.formats')" width="150">

@@ -158,7 +158,7 @@
     "retrying": "Attempt {attempt}/{max}...",
     "retryingShort": "Retry {attempt}/{max}",
     "waitingRetry": "Waiting for retry ({attempt}/{max})",
-    "waitingRetryShort": "Retry {attempt}/{max}",
+    "waitingRetryShort": "Wait {attempt}/{max}",
     "failed": "Failed",
     "completed": "Completed",
     "generatedOutputs": "Generated Outputs",

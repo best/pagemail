@@ -82,18 +82,6 @@ git push && git push --tags
 make docker-buildx
 ```
 
-### Database Migration
-```bash
-# Create new migration
-make migrate-new name=add_users_table
-
-# Apply migrations
-make migrate-up
-
-# Check migration status
-make migrate-status
-```
-
 ## Makefile Commands Reference
 
 Always use `make` commands for project operations. Run `make help` for full list.
@@ -177,16 +165,6 @@ Always use `make` commands for project operations. Run `make help` for full list
 | `make prod-health` | 生产环境健康检查 |
 | `make prod-status` | 查看生产环境服务状态 |
 | `make prod-clean` | 清理生产环境（不包括 volumes）|
-
-### 数据库迁移
-| Command | Description |
-|---------|-------------|
-| `make migrate-new name=xxx` | 创建新迁移 |
-| `make migrate-up` | 应用所有待执行迁移 |
-| `make migrate-down steps=1` | 回滚迁移 |
-| `make migrate-status` | 显示迁移状态 |
-| `make migrate-lint` | 校验迁移文件（CI 用）|
-| `make migrate-hash` | 重新计算迁移 hash |
 
 ### 部署辅助
 | Command | Description |

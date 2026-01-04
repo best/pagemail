@@ -110,25 +110,6 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit -- --run
 
-  migrate-lint:
-    name: Lint Migrations
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Atlas
-        uses: ariga/setup-atlas@v0
-        with:
-          cloud-token: ${{ secrets.ATLAS_CLOUD_TOKEN }}
-
-      - name: Lint migrations
-        run: |
-          atlas migrate lint \
-            --dir "file://internal/db/migrations" \
-            --dev-url "docker://postgres/16/dev?search_path=public" \
-            --latest 1
-        continue-on-error: true
-
   build:
     name: Build (${{ matrix.platform }})
     runs-on: ${{ matrix.runner }}

@@ -68,6 +68,3 @@ logs/
 
 # Coverage
 coverage/
-
-# Atlas
-/internal/db/migrations/*.sum

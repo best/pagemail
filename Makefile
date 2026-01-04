@@ -17,12 +17,6 @@ DOCKER_IMAGE := astralor/pagemail
 DOCKER_TAG ?= $(VERSION)
 PLATFORMS := linux/amd64,linux/arm64
 
-ATLAS := atlas
-DB_URL ?= $(shell grep DB_URL .env 2>/dev/null | cut -d '=' -f2-)
-ifeq ($(DB_URL),)
-	DB_URL := postgres://pagemail:pagemail@localhost:5432/pagemail?sslmode=disable
-endif
-
 # ==============================================================================
 # Help
 # ==============================================================================
@@ -291,49 +285,6 @@ prod-status: ## 查看生产环境服务状态
 prod-clean: ## 清理生产环境（不包括 volumes）
 	docker compose -f $(COMPOSE_FILE) rm -sf pagemail
 	-docker rmi $(DEV_IMAGE) 2>/dev/null || true
-
-# ==============================================================================
-# Database Migrations
-# ==============================================================================
-
-##@ 数据库迁移
-.PHONY: migrate-new
-migrate-new: ## 创建新迁移: make migrate-new name=xxx
-	@if [ -z "$(name)" ]; then echo "Usage: make migrate-new name=migration_name"; exit 1; fi
-	$(ATLAS) migrate diff $(name) \
-		--dir "file://internal/db/migrations" \
-		--to "file://internal/db/schema.sql" \
-		--dev-url "docker://postgres/16/dev?search_path=public"
-
-.PHONY: migrate-up
-migrate-up: ## 应用所有待执行迁移
-	$(ATLAS) migrate apply \
-		--dir "file://internal/db/migrations" \
-		--url "$(DB_URL)"
-
-.PHONY: migrate-down
-migrate-down: ## 回滚迁移: make migrate-down steps=1
-	@steps=$${steps:-1}; \
-	$(ATLAS) migrate down $$steps \
-		--dir "file://internal/db/migrations" \
-		--url "$(DB_URL)"
-
-.PHONY: migrate-status
-migrate-status: ## 显示迁移状态
-	$(ATLAS) migrate status \
-		--dir "file://internal/db/migrations" \
-		--url "$(DB_URL)"
-
-.PHONY: migrate-lint
-migrate-lint: ## 校验迁移文件（CI 用）
-	$(ATLAS) migrate lint \
-		--dir "file://internal/db/migrations" \
-		--dev-url "docker://postgres/16/dev?search_path=public" \
-		--latest 1
-
-.PHONY: migrate-hash
-migrate-hash: ## 重新计算迁移 hash
-	$(ATLAS) migrate hash --dir "file://internal/db/migrations"
 
 # ==============================================================================
 # Deployment Helpers

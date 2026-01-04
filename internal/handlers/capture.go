@@ -80,10 +80,11 @@ func (h *Handler) CreateCapture(c *gin.Context) {
 	uid, _ := uuid.Parse(userID)
 
 	task := models.CaptureTask{
-		UserID:  uid,
-		URL:     req.URL,
-		Formats: formatsToInt(req.Formats),
-		Status:  models.TaskStatusPending,
+		UserID:      uid,
+		URL:         req.URL,
+		Formats:     formatsToInt(req.Formats),
+		Status:      models.TaskStatusPending,
+		MaxAttempts: 3,
 	}
 
 	if req.Cookies != "" {
@@ -140,13 +141,15 @@ func (h *Handler) ListCaptures(c *gin.Context) {
 	result := make([]gin.H, len(tasks))
 	for i := range tasks {
 		result[i] = gin.H{
-			"id":         tasks[i].ID,
-			"url":        tasks[i].URL,
-			"formats":    intToFormats(tasks[i].Formats),
-			"status":     tasks[i].Status,
-			"error":      tasks[i].ErrorMessage,
-			"created_at": tasks[i].CreatedAt,
-			"updated_at": tasks[i].UpdatedAt,
+			"id":           tasks[i].ID,
+			"url":          tasks[i].URL,
+			"formats":      intToFormats(tasks[i].Formats),
+			"status":       tasks[i].Status,
+			"attempts":     tasks[i].Attempts,
+			"max_attempts": tasks[i].MaxAttempts,
+			"error":        tasks[i].ErrorMessage,
+			"created_at":   tasks[i].CreatedAt,
+			"updated_at":   tasks[i].UpdatedAt,
 		}
 	}
 
@@ -195,6 +198,8 @@ func (h *Handler) GetCapture(c *gin.Context) {
 		"url":              task.URL,
 		"formats":          intToFormats(task.Formats),
 		"status":           task.Status,
+		"attempts":         task.Attempts,
+		"max_attempts":     task.MaxAttempts,
 		"error_message":    task.ErrorMessage,
 		"outputs":          outputResult,
 		"delivery_history": deliveryHistory,
@@ -221,6 +226,7 @@ func (h *Handler) RetryCapture(c *gin.Context) {
 
 	task.Status = models.TaskStatusPending
 	task.ErrorMessage = ""
+	task.Attempts = 0
 	h.db.Save(&task)
 
 	formats := intToFormats(task.Formats)

@@ -39,7 +39,7 @@ const fetchTasks = async () => {
 
 const formatTime = (date: Date) => date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
-const hasPendingTasks = computed(() => tasks.value.some(t => t.status === 'pending' || t.status === 'processing'))
+const hasPendingTasks = computed(() => tasks.value.some(t => t.status === 'pending' || t.status === 'running'))
 
 const { isRunning } = usePolling(fetchTasks, {
   intervalMs: 10000,
@@ -77,7 +77,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
   const map: Record<string, 'success' | 'danger' | 'warning' | 'info'> = {
     completed: 'success',
     failed: 'danger',
-    processing: 'warning',
+    running: 'warning',
     pending: 'info'
   }
   return map[status] || 'info'
@@ -107,7 +107,7 @@ watch(() => query.status, () => {
       <div class="filters">
         <el-select v-model="query.status" :placeholder="t('tasks.filterStatus')" clearable style="width: 150px">
           <el-option :label="t('tasks.pending')" value="pending" />
-          <el-option :label="t('tasks.processing')" value="processing" />
+          <el-option :label="t('tasks.processing')" value="running" />
           <el-option :label="t('tasks.completed')" value="completed" />
           <el-option :label="t('tasks.failed')" value="failed" />
         </el-select>

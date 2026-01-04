@@ -17,7 +17,7 @@ const lastRefreshed = ref<Date>(new Date())
 const stats = computed(() => {
   const total = tasks.value.length
   const completed = tasks.value.filter(t => t.status === 'completed').length
-  const pending = tasks.value.filter(t => t.status === 'pending' || t.status === 'processing').length
+  const pending = tasks.value.filter(t => t.status === 'pending' || t.status === 'running').length
   return { total, completed, pending }
 })
 
@@ -52,7 +52,7 @@ const fetchTasks = async () => {
 
 const formatTime = (date: Date) => date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
-const hasPendingTasks = computed(() => tasks.value.some(t => t.status === 'pending' || t.status === 'processing'))
+const hasPendingTasks = computed(() => tasks.value.some(t => t.status === 'pending' || t.status === 'running'))
 
 const { isRunning } = usePolling(fetchTasks, {
   intervalMs: 10000,
@@ -64,7 +64,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
   const map: Record<string, 'success' | 'danger' | 'warning' | 'info'> = {
     completed: 'success',
     failed: 'danger',
-    processing: 'warning',
+    running: 'warning',
     pending: 'info'
   }
   return map[status] || 'info'

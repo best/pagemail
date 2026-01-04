@@ -292,7 +292,29 @@ func (w *Worker) processCapture(ctx context.Context, job models.Job) error {
 		return fmt.Errorf("task not found: %w", err)
 	}
 
-	w.db.Model(&task).Update("status", models.TaskStatusRunning)
+	// Conditionally update: only if task is pending and not completed
+	updateResult := w.db.Model(&task).
+		Where("status = ? AND completed_at IS NULL", models.TaskStatusPending).
+		Updates(map[string]interface{}{
+			"status":        models.TaskStatusRunning,
+			"attempts":      gorm.Expr("attempts + 1"),
+			"error_message": "",
+		})
+
+	if updateResult.RowsAffected == 0 {
+		log.Warn().Str("task_id", taskID.String()).Msg("Task not in pending state, skipping")
+		return nil
+	}
+
+	// Reload task to get updated attempts value
+	if err := w.db.First(&task, "id = ?", taskID).Error; err != nil {
+		w.db.Model(&models.CaptureTask{}).Where("id = ?", taskID).
+			Updates(map[string]interface{}{
+				"status":        models.TaskStatusFailed,
+				"error_message": "internal error: failed to reload task",
+			})
+		return fmt.Errorf("failed to reload task: %w", err)
+	}
 
 	browser, err := w.getBrowser()
 	if err != nil {
@@ -426,10 +448,19 @@ func (w *Worker) saveOutput(ctx context.Context, taskID uuid.UUID, format string
 }
 
 func (w *Worker) updateTaskFailed(task *models.CaptureTask, errMsg string) {
-	w.db.Model(task).Updates(map[string]interface{}{
-		"status":        models.TaskStatusFailed,
+	updates := map[string]interface{}{
 		"error_message": errMsg,
-	})
+	}
+
+	// Check if this is the final attempt
+	if task.Attempts >= task.MaxAttempts {
+		updates["status"] = models.TaskStatusFailed
+	} else {
+		updates["status"] = models.TaskStatusPending
+	}
+
+	// Conditional update: only if task is not completed
+	w.db.Model(task).Where("completed_at IS NULL").Updates(updates)
 }
 
 func parseCookies(cookieStr, targetURL string) []*proto.NetworkCookieParam {

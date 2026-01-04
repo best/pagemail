@@ -62,6 +62,10 @@ func Migrate(db *gorm.DB) error {
 		return fmt.Errorf("failed to run migrations: %w", err)
 	}
 
+	if err := backfillCaptureTaskRetryFields(db); err != nil {
+		return fmt.Errorf("failed to backfill capture task fields: %w", err)
+	}
+
 	if err := seedPermissions(db); err != nil {
 		return fmt.Errorf("failed to seed permissions: %w", err)
 	}
@@ -138,6 +142,22 @@ func assignRolePermissions(db *gorm.DB, role string, permNames []string) error {
 				}
 			}
 		}
+	}
+	return nil
+}
+
+func backfillCaptureTaskRetryFields(db *gorm.DB) error {
+	result := db.Model(&models.CaptureTask{}).
+		Where("attempts IS NULL OR max_attempts IS NULL").
+		Updates(map[string]interface{}{
+			"attempts":     0,
+			"max_attempts": 3,
+		})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected > 0 {
+		log.Info().Int64("rows", result.RowsAffected).Msg("Backfilled capture task retry fields")
 	}
 	return nil
 }

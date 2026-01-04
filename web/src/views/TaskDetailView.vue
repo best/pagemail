@@ -38,12 +38,42 @@ const fetchTask = async () => {
 
 const formatTime = (date: Date) => date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
-const isPendingTask = computed(() => task.value?.status === 'pending' || task.value?.status === 'processing')
+const isPendingTask = computed(() => task.value?.status === 'pending' || task.value?.status === 'running')
 
 const { isRunning, stop: stopPolling } = usePolling(fetchTask, {
   intervalMs: 10000,
   pendingIntervalMs: 5000,
   isPending: () => isPendingTask.value
+})
+
+const statusDisplay = computed(() => {
+  if (!task.value) return ''
+  const { status, attempts, max_attempts } = task.value
+
+  switch (status) {
+    case 'pending':
+      if (attempts > 0) {
+        return t('taskDetail.waitingRetry', { attempt: attempts, max: max_attempts })
+      }
+      return t('taskDetail.pending')
+    case 'running':
+      if (attempts > 1) {
+        return t('taskDetail.retrying', { attempt: attempts, max: max_attempts })
+      }
+      return t('taskDetail.processing')
+    case 'failed':
+      return t('taskDetail.failed')
+    case 'completed':
+      return t('taskDetail.completed')
+    default:
+      return status
+  }
+})
+
+const showError = computed(() => {
+  if (!task.value) return false
+  return task.value.status === 'failed' ||
+    (task.value.status === 'pending' && task.value.attempts > 0 && task.value.error_message)
 })
 
 const handleRetry = async () => {
@@ -118,7 +148,7 @@ const getStatusType = (status: string): 'success' | 'danger' | 'warning' | 'info
   const map: Record<string, 'success' | 'danger' | 'warning' | 'info'> = {
     completed: 'success',
     failed: 'danger',
-    processing: 'warning',
+    running: 'warning',
     pending: 'info'
   }
   return map[status] || 'info'
@@ -147,7 +177,7 @@ const formatLabel = (format: string): string => {
           <template #header>
             <div class="card-header">
               <span>{{ t('taskDetail.taskInfo') }}</span>
-              <el-tag :type="getStatusType(task.status)">{{ task.status.toUpperCase() }}</el-tag>
+              <el-tag :type="getStatusType(task.status)">{{ statusDisplay }}</el-tag>
             </div>
           </template>
           <el-descriptions :column="1" border>
@@ -159,7 +189,7 @@ const formatLabel = (format: string): string => {
               {{ new Date(task.created_at).toLocaleString() }}
             </el-descriptions-item>
             <el-descriptions-item :label="t('tasks.formats')">{{ task.formats.map(formatLabel).join(', ') }}</el-descriptions-item>
-            <el-descriptions-item v-if="task.error_message" :label="t('taskDetail.error')">
+            <el-descriptions-item v-if="showError" :label="t('taskDetail.lastError')">
               <span class="text-danger">{{ task.error_message }}</span>
             </el-descriptions-item>
           </el-descriptions>

@@ -120,6 +120,8 @@ type CaptureTask struct {
 	ViewportWidth  int             `gorm:"default:1920" json:"viewport_width"`
 	ViewportHeight int             `gorm:"default:1080" json:"viewport_height"`
 	WaitTimeoutMs  int             `gorm:"default:30000" json:"wait_timeout_ms"`
+	Attempts       int             `gorm:"not null;default:0" json:"attempts"`
+	MaxAttempts    int             `gorm:"not null;default:3" json:"max_attempts"`
 	ErrorMessage   string          `json:"error_message,omitempty"`
 	CreatedAt      time.Time       `gorm:"index" json:"created_at"`
 	UpdatedAt      time.Time       `json:"updated_at"`

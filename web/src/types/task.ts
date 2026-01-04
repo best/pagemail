@@ -1,10 +1,12 @@
 export interface Task {
   id: string
   url: string
-  status: 'pending' | 'processing' | 'completed' | 'failed'
+  status: 'pending' | 'running' | 'completed' | 'failed'
   formats: string[]
   created_at: string
   updated_at: string
+  attempts: number
+  max_attempts: number
   error_message?: string
   outputs?: TaskOutput[]
   delivery_history?: DeliveryAttempt[]

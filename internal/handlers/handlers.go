@@ -238,11 +238,7 @@ func (h *Handler) Login(c *gin.Context) {
 		"refresh_token": refreshToken,
 		"token_type":    "Bearer",
 		"expires_in":    int(h.cfg.JWT.AccessExpiry.Seconds()),
-		"user": gin.H{
-			"id":    user.ID,
-			"email": user.Email,
-			"role":  user.Role,
-		},
+		"user":          buildUserResponse(&user),
 	})
 }
 
@@ -282,14 +278,7 @@ func (h *Handler) GetCurrentUser(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"id":         user.ID,
-		"email":      user.Email,
-		"role":       user.Role,
-		"is_active":  user.IsActive,
-		"created_at": user.CreatedAt,
-		"updated_at": user.UpdatedAt,
-	})
+	c.JSON(http.StatusOK, buildUserResponse(&user))
 }
 
 func (h *Handler) GetPublicSiteConfig(c *gin.Context) {

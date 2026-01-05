@@ -38,6 +38,9 @@ func Setup(cfg *config.Config, db *gorm.DB, store storage.Storage) *gin.Engine {
 	users.GET("/me", h.GetCurrentUser)
 	users.PATCH("/me", h.UpdateCurrentUser)
 	users.PATCH("/me/password", h.ChangePassword)
+	users.PUT("/me/avatar", h.UploadAvatar)
+	users.DELETE("/me/avatar", h.DeleteAvatar)
+	users.GET("/:id/avatar", h.GetAvatar)
 
 	captures := v1.Group("/captures")
 	captures.Use(middleware.Auth(cfg))

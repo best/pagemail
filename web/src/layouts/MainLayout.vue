@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref, watch, onBeforeUnmount } from 'vue'
 import { RouterView, useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useUiStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
+import apiClient from '@/api/client'
 import {
   House,
   Document,
@@ -26,7 +27,32 @@ const uiStore = useUiStore()
 const authStore = useAuthStore()
 const siteConfig = useSiteConfigStore()
 
-onMounted(() => siteConfig.fetchConfig())
+const avatarUrl = ref<string>('')
+
+const fetchAvatar = async () => {
+  if (!authStore.user?.avatar_url) {
+    avatarUrl.value = ''
+    return
+  }
+  try {
+    const response = await apiClient.get(authStore.user.avatar_url, { responseType: 'blob' })
+    if (avatarUrl.value) URL.revokeObjectURL(avatarUrl.value)
+    avatarUrl.value = URL.createObjectURL(response.data)
+  } catch {
+    avatarUrl.value = ''
+  }
+}
+
+onMounted(() => {
+  siteConfig.fetchConfig()
+  fetchAvatar()
+})
+
+watch(() => authStore.user?.avatar_url, () => fetchAvatar())
+
+onBeforeUnmount(() => {
+  if (avatarUrl.value) URL.revokeObjectURL(avatarUrl.value)
+})
 
 const menuItems = computed(() => {
   const items = [
@@ -93,7 +119,7 @@ function handleLogout() {
           <el-button :icon="uiStore.isDark ? Sunny : Moon" text @click="uiStore.toggleTheme" aria-label="Toggle Theme" />
           <el-dropdown trigger="click">
             <el-button text>
-              <el-avatar :size="32">{{ authStore.user?.email?.[0]?.toUpperCase() }}</el-avatar>
+              <el-avatar :size="32" :src="avatarUrl">{{ authStore.user?.email?.[0]?.toUpperCase() }}</el-avatar>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>

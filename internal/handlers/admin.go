@@ -27,15 +27,8 @@ func (h *Handler) AdminListUsers(c *gin.Context) {
 
 	result := make([]gin.H, len(users))
 	for i := range users {
-		result[i] = gin.H{
-			"id":            users[i].ID,
-			"email":         users[i].Email,
-			"role":          users[i].Role,
-			"is_active":     users[i].IsActive,
-			"last_login_at": users[i].LastLoginAt,
-			"created_at":    users[i].CreatedAt,
-			"updated_at":    users[i].UpdatedAt,
-		}
+		result[i] = buildUserResponse(&users[i])
+		result[i]["last_login_at"] = users[i].LastLoginAt
 	}
 
 	paginatedResponse(c, result, total, page, limit)
@@ -50,15 +43,9 @@ func (h *Handler) AdminGetUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"id":            user.ID,
-		"email":         user.Email,
-		"role":          user.Role,
-		"is_active":     user.IsActive,
-		"last_login_at": user.LastLoginAt,
-		"created_at":    user.CreatedAt,
-		"updated_at":    user.UpdatedAt,
-	})
+	resp := buildUserResponse(&user)
+	resp["last_login_at"] = user.LastLoginAt
+	c.JSON(http.StatusOK, resp)
 }
 
 type AdminUpdateUserRequest struct {
@@ -120,12 +107,7 @@ func (h *Handler) AdminUpdateUser(c *gin.Context) {
 		Changes: changes,
 	})
 
-	c.JSON(http.StatusOK, gin.H{
-		"id":        user.ID,
-		"email":     user.Email,
-		"role":      user.Role,
-		"is_active": user.IsActive,
-	})
+	c.JSON(http.StatusOK, buildUserResponse(&user))
 }
 
 func (h *Handler) AdminDeleteUser(c *gin.Context) {

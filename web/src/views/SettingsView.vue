@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
 import apiClient from '@/api/client'
+import AvatarUpload from '@/components/common/AvatarUpload.vue'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
@@ -46,6 +47,10 @@ const updatePassword = async () => {
     <el-card>
       <el-tabs v-model="activeTab">
         <el-tab-pane :label="t('settings.profile')" name="profile">
+          <div class="profile-section">
+            <AvatarUpload />
+          </div>
+
           <el-form label-position="top" style="max-width: 400px">
             <el-form-item :label="t('auth.email')">
               <el-input :model-value="authStore.user?.email" disabled />

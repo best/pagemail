@@ -7,6 +7,11 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	RoleAdmin = "admin"
+	RoleUser  = "user"
+)
+
 type User struct {
 	ID           uuid.UUID      `gorm:"type:uuid;primary_key" json:"id"`
 	Email        string         `gorm:"uniqueIndex;not null" json:"email"`

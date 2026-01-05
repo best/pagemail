@@ -72,7 +72,7 @@ func (h *Handler) AdminUpdateUser(c *gin.Context) {
 	oldIsActive := user.IsActive
 
 	if req.Role != nil {
-		if *req.Role != "admin" && *req.Role != "user" {
+		if *req.Role != models.RoleAdmin && *req.Role != models.RoleUser {
 			errors.BadRequest("Invalid role").Respond(c)
 			return
 		}
@@ -216,7 +216,7 @@ func (h *Handler) GetSystemStats(c *gin.Context) {
 
 func (h *Handler) GetGlobalSMTP(c *gin.Context) {
 	var admin models.User
-	if err := h.db.Where("role = ?", "admin").First(&admin).Error; err != nil {
+	if err := h.db.Where("role = ?", models.RoleAdmin).First(&admin).Error; err != nil {
 		errors.NotFound("Admin user not found").Respond(c)
 		return
 	}

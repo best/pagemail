@@ -102,9 +102,9 @@ func (h *Handler) Register(c *gin.Context) {
 	var userCount int64
 	h.db.Model(&models.User{}).Count(&userCount)
 
-	role := "user"
+	role := models.RoleUser
 	if userCount == 0 {
-		role = "admin"
+		role = models.RoleAdmin
 	}
 
 	user := models.User{

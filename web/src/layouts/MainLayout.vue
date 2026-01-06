@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, onBeforeUnmount } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterView, useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useUiStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
 import { useSiteConfigStore } from '@/stores/siteConfig'
+import { useAvatar } from '@/composables/useAvatar'
 import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
-import apiClient from '@/api/client'
 import {
   House,
   Document,
@@ -26,32 +26,10 @@ const route = useRoute()
 const uiStore = useUiStore()
 const authStore = useAuthStore()
 const siteConfig = useSiteConfigStore()
-
-const avatarUrl = ref<string>('')
-
-const fetchAvatar = async () => {
-  if (!authStore.user?.avatar_url) {
-    avatarUrl.value = ''
-    return
-  }
-  try {
-    const response = await apiClient.get(authStore.user.avatar_url, { responseType: 'blob' })
-    if (avatarUrl.value) URL.revokeObjectURL(avatarUrl.value)
-    avatarUrl.value = URL.createObjectURL(response.data)
-  } catch {
-    avatarUrl.value = ''
-  }
-}
+const { avatarUrl } = useAvatar()
 
 onMounted(() => {
   siteConfig.fetchConfig()
-  fetchAvatar()
-})
-
-watch(() => authStore.user?.avatar_url, () => fetchAvatar())
-
-onBeforeUnmount(() => {
-  if (avatarUrl.value) URL.revokeObjectURL(avatarUrl.value)
 })
 
 const menuItems = computed(() => {

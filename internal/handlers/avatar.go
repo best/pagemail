@@ -5,7 +5,9 @@ import (
 	stderrors "errors"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
+	"path"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -16,6 +18,33 @@ import (
 	"pagemail/internal/pkg/avatar"
 	"pagemail/internal/pkg/errors"
 )
+
+const defaultContentType = "application/octet-stream"
+
+func handleFormFileError(c *gin.Context, err error) {
+	var maxBytesErr *http.MaxBytesError
+	if stderrors.As(err, &maxBytesErr) {
+		errors.NewProblemDetail(http.StatusRequestEntityTooLarge, "Payload Too Large",
+			fmt.Sprintf("File too large, max %d bytes", avatar.MaxUploadBytes)).Respond(c)
+		return
+	}
+	if stderrors.Is(err, http.ErrMissingFile) {
+		errors.BadRequest("Missing avatar file").Respond(c)
+		return
+	}
+	errors.BadRequest("Failed to read upload").Respond(c)
+}
+
+func handleAvatarProcessError(c *gin.Context, err error) {
+	switch {
+	case stderrors.Is(err, avatar.ErrFileTooLarge):
+		errors.NewProblemDetail(http.StatusRequestEntityTooLarge, "Payload Too Large", err.Error()).Respond(c)
+	case stderrors.Is(err, avatar.ErrUnsupportedType):
+		errors.NewProblemDetail(http.StatusUnsupportedMediaType, "Unsupported Media Type", err.Error()).Respond(c)
+	default:
+		errors.BadRequest(err.Error()).Respond(c)
+	}
+}
 
 func (h *Handler) UploadAvatar(c *gin.Context) {
 	userID := c.GetString("user_id")
@@ -36,17 +65,7 @@ func (h *Handler) UploadAvatar(c *gin.Context) {
 
 	fileHeader, err := c.FormFile("avatar")
 	if err != nil {
-		var maxBytesErr *http.MaxBytesError
-		if stderrors.As(err, &maxBytesErr) {
-			errors.NewProblemDetail(http.StatusRequestEntityTooLarge, "Payload Too Large",
-				fmt.Sprintf("File too large, max %d bytes", avatar.MaxUploadBytes)).Respond(c)
-			return
-		}
-		if stderrors.Is(err, http.ErrMissingFile) {
-			errors.BadRequest("Missing avatar file").Respond(c)
-			return
-		}
-		errors.BadRequest("Failed to read upload").Respond(c)
+		handleFormFileError(c, err)
 		return
 	}
 
@@ -59,7 +78,7 @@ func (h *Handler) UploadAvatar(c *gin.Context) {
 
 	result, err := avatar.ValidateAndProcess(f, avatar.MaxUploadBytes)
 	if err != nil {
-		errors.BadRequest(err.Error()).Respond(c)
+		handleAvatarProcessError(c, err)
 		return
 	}
 
@@ -108,7 +127,7 @@ func (h *Handler) GetAvatar(c *gin.Context) {
 	currentUserID := c.GetString("user_id")
 	currentRole := c.GetString("user_role")
 
-	if currentUserID != targetID && currentRole != "admin" {
+	if currentUserID != targetID && currentRole != models.RoleAdmin {
 		errors.Forbidden("Access denied").Respond(c)
 		return
 	}
@@ -132,9 +151,21 @@ func (h *Handler) GetAvatar(c *gin.Context) {
 	}
 	defer reader.Close()
 
-	c.Header("Content-Type", info.ContentType)
+	contentType := info.ContentType
+	if contentType == "" || contentType == defaultContentType {
+		if ct := mime.TypeByExtension(path.Ext(*user.AvatarKey)); ct != "" {
+			contentType = ct
+		} else {
+			contentType = defaultContentType
+		}
+	}
+
+	c.Header("Content-Type", contentType)
 	c.Header("X-Content-Type-Options", "nosniff")
 	c.Header("Cache-Control", "private, max-age=3600")
+	if info.Size > 0 {
+		c.Header("Content-Length", fmt.Sprintf("%d", info.Size))
+	}
 	c.Status(http.StatusOK)
 
 	if _, err := io.Copy(c.Writer, reader); err != nil {

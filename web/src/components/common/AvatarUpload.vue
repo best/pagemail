@@ -1,38 +1,24 @@
 <script setup lang="ts">
-import { ref, computed, onBeforeUnmount, onMounted, watch } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { Plus, Check, Close } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { UploadFile } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { userApi } from '@/api/user'
 import { useAuthStore } from '@/stores/auth'
-import apiClient from '@/api/client'
+import { useAvatar } from '@/composables/useAvatar'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
+const { avatarUrl } = useAvatar()
 
 const loading = ref(false)
 const previewUrl = ref<string>('')
-const avatarBlobUrl = ref<string>('')
 const selectedFile = ref<File | null>(null)
-
-const fetchAvatar = async () => {
-  if (!authStore.user?.avatar_url) return
-  try {
-    const response = await apiClient.get(`${authStore.user.avatar_url}`, { responseType: 'blob' })
-    if (avatarBlobUrl.value) URL.revokeObjectURL(avatarBlobUrl.value)
-    avatarBlobUrl.value = URL.createObjectURL(response.data)
-  } catch {
-    avatarBlobUrl.value = ''
-  }
-}
-
-onMounted(() => fetchAvatar())
-watch(() => authStore.user?.avatar_url, () => fetchAvatar())
 
 const currentAvatar = computed(() => {
   if (previewUrl.value) return previewUrl.value
-  return avatarBlobUrl.value
+  return avatarUrl.value
 })
 
 const userInitial = computed(() => authStore.user?.email?.[0]?.toUpperCase() || '?')
@@ -71,7 +57,6 @@ const cancelUpload = () => {
 
 onBeforeUnmount(() => {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
-  if (avatarBlobUrl.value) URL.revokeObjectURL(avatarBlobUrl.value)
 })
 
 const uploadAvatar = async () => {
@@ -81,7 +66,7 @@ const uploadAvatar = async () => {
   try {
     const response = await userApi.uploadAvatar(selectedFile.value)
     authStore.user = response.data
-    await fetchAvatar()
+    // Watcher in useAvatar handles fetching new avatar automatically
     cancelUpload()
     ElMessage.success(t('settings.avatarUpdated'))
   } catch {

@@ -2,6 +2,7 @@ package avatar
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -13,6 +14,11 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/google/uuid"
 	_ "golang.org/x/image/webp" // register WebP decoder
+)
+
+var (
+	ErrFileTooLarge    = errors.New("file too large")
+	ErrUnsupportedType = errors.New("unsupported image type")
 )
 
 const (
@@ -40,20 +46,24 @@ func ValidateAndProcess(reader io.Reader, maxBytes int64) (*ProcessResult, error
 		return nil, fmt.Errorf("failed to read file: %w", err)
 	}
 	if int64(len(data)) > maxBytes {
-		return nil, fmt.Errorf("file too large, max %d bytes", maxBytes)
+		return nil, fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, maxBytes)
 	}
 
 	contentType := http.DetectContentType(data)
 	ext, ok := AllowedContentTypes[contentType]
 	if !ok {
-		return nil, fmt.Errorf("unsupported image type: %s", contentType)
+		return nil, fmt.Errorf("%w: %s", ErrUnsupportedType, contentType)
 	}
 
 	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
 		return nil, fmt.Errorf("invalid image: %w", err)
 	}
-	if cfg.Width*cfg.Height > MaxPixels {
+	if cfg.Width <= 0 || cfg.Height <= 0 {
+		return nil, fmt.Errorf("invalid image dimensions")
+	}
+	w, h := int64(cfg.Width), int64(cfg.Height)
+	if w > MaxPixels/h || w*h > MaxPixels {
 		return nil, fmt.Errorf("image dimensions too large")
 	}
 

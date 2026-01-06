@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useSiteConfigStore } from '@/stores/siteConfig'
 import { useUiStore } from '@/stores/ui'
+import { useAvatar } from '@/composables/useAvatar'
 import LanguageSwitcher from '@/components/common/LanguageSwitcher.vue'
 import { Moon, Sunny } from '@element-plus/icons-vue'
-import apiClient from '@/api/client'
 
 const props = withDefaults(defineProps<{
   solid?: boolean
@@ -20,26 +20,12 @@ const router = useRouter()
 const authStore = useAuthStore()
 const siteConfig = useSiteConfigStore()
 const uiStore = useUiStore()
+const { avatarUrl } = useAvatar()
 
 const isScrolled = ref(false)
-const avatarUrl = ref<string>('')
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 50
-}
-
-const fetchAvatar = async () => {
-  if (!authStore.user?.avatar_url) {
-    avatarUrl.value = ''
-    return
-  }
-  try {
-    const response = await apiClient.get(authStore.user.avatar_url, { responseType: 'blob' })
-    if (avatarUrl.value) URL.revokeObjectURL(avatarUrl.value)
-    avatarUrl.value = URL.createObjectURL(response.data)
-  } catch {
-    avatarUrl.value = ''
-  }
 }
 
 const hasBackground = computed(() => props.solid || isScrolled.value)
@@ -59,14 +45,10 @@ const handleUserCommand = (command: string) => {
 onMounted(() => {
   handleScroll()
   window.addEventListener('scroll', handleScroll, { passive: true })
-  fetchAvatar()
 })
-
-watch(() => authStore.user?.avatar_url, () => fetchAvatar())
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
-  if (avatarUrl.value) URL.revokeObjectURL(avatarUrl.value)
 })
 </script>
 

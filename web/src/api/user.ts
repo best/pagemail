@@ -2,6 +2,11 @@ import apiClient from './client'
 import type { User } from '@/types/user'
 
 export const userApi = {
+  async getAvatar(url: string): Promise<Blob> {
+    const response = await apiClient.get<Blob>(url, { responseType: 'blob' })
+    return response.data
+  },
+
   uploadAvatar(file: File) {
     const formData = new FormData()
     formData.append('avatar', file)
